@@ -170,11 +170,18 @@
     btn.addEventListener("click", function(){ setMode(btn.dataset.mode); });
   });
 
-  // If already authenticated, redirect
+  // If already authenticated, redirect (sauf après déconnexion)
   try {
-    if (window.FT && FT.auth && FT.auth.isAuthenticated()){
+    const params = new URLSearchParams(window.location.search);
+    const isLogout = params.get("logout") === "1";
+    if (!isLogout && window.FT && FT.auth && FT.auth.isAuthenticated()){
       FT.auth.redirectAfterAuth();
       return;
+    }
+    if (isLogout) {
+      // Nettoyage final au cas où Supabase aurait restauré une session
+      try { localStorage.removeItem("finatrack_session"); } catch(e){}
+      console.info("[Auth] Déconnexion confirmée, resté sur login");
     }
   } catch(e){}
 

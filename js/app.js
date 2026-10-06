@@ -899,8 +899,12 @@
                                         confirmLabel: "Se déconnecter"
                                     }).then(function (ok) {
                                         if (!ok) return;
-                                        global.FT.auth.logout();
-                                        global.location.href = global.FT.auth.getLoginPath();
+                                        // Logout est async quand Supabase est configuré, on attend puis on redirige
+                                        Promise.resolve(global.FT.auth.logout()).then(function () {
+                                            global.location.href = global.FT.auth.getLoginPath() + "?logout=1";
+                                        }).catch(function () {
+                                            global.location.href = global.FT.auth.getLoginPath() + "?logout=1";
+                                        });
                                     });
                                 }
                             }

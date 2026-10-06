@@ -194,9 +194,20 @@
     }
 
     async function logout() {
+        // 1. Clear local session IMMEDIATEMENT (synchrone) pour éviter reconnexion instantanée
+        clearSession();
+        // 2. Nettoie aussi le storage Supabase (sb-...-auth-token) synchrone
+        try {
+            const keysToRemove = [];
+            for (let i = 0; i < global.localStorage.length; i++) {
+                const k = global.localStorage.key(i);
+                if (k && (k.indexOf("sb-") === 0 || k.indexOf("supabase") !== -1)) keysToRemove.push(k);
+            }
+            keysToRemove.forEach(function (k) { try { global.localStorage.removeItem(k); } catch (e) {} });
+        } catch (e) {}
+        // 3. Déconnexion Supabase async en arrière-plan
         const supa = getSupa();
         if (supa) { try { await supa.auth.signOut(); } catch (e) {} }
-        clearSession();
         if (U && U.bus) U.bus.emit("auth:changed", { action: "logout" });
     }
 
