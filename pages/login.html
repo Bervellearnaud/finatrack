@@ -202,6 +202,7 @@
       } else {
         await FT.auth.login(em, pw);
       }
+      try { localStorage.setItem("finatrack_show_welcome", "1"); } catch(e){}
       FT.auth.redirectAfterAuth();
     } catch(err){
       showError(err.message || "Erreur de connexion.");
@@ -220,6 +221,7 @@
         } else {
           await FT.auth.register({ email: demoEmail, password: "demo1234", name: "Démo" });
         }
+        try { localStorage.setItem("finatrack_show_welcome", "1"); } catch(e){}
         FT.auth.redirectAfterAuth();
       } catch(err){
         showError(err.message);

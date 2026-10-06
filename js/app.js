@@ -1374,6 +1374,54 @@
         initKeyboardShortcuts();
         initPageModules();
 
+        /* Message de bienvenue personnalisé avec nom + salutation selon l'heure d'Abidjan */
+        (function showWelcomeIfNeeded(){
+            try {
+                const flag = localStorage.getItem("finatrack_show_welcome");
+                if (!flag) return;
+                localStorage.removeItem("finatrack_show_welcome");
+                const user = (global.FT.auth && FT.auth.getCurrentUser && FT.auth.getCurrentUser()) || null;
+                const rawName = (user && (user.name || user.email)) || "là";
+                const firstName = rawName.split("@")[0].split(" ")[0];
+                // Heure d'Abidjan
+                let hour = new Date().getHours();
+                try {
+                    const fmt = new Intl.DateTimeFormat("fr-FR", { hour: "numeric", hour12: false, timeZone: "Africa/Abidjan" });
+                    const parts = fmt.formatToParts(new Date());
+                    const hPart = parts.find(function(p){ return p.type==="hour"; });
+                    if (hPart) hour = parseInt(hPart.value,10);
+                } catch(e){}
+                let greet = "Bonjour";
+                if (hour >= 12 && hour < 17) greet = "Bon après-midi";
+                else if (hour >= 17 || hour < 5) greet = "Bonsoir";
+                const emoji = hour < 12 ? "☀️" : hour < 17 ? "🌤️" : "🌙";
+                // Toast principal
+                setTimeout(function(){
+                    U.toast(greet + " " + firstName + " " + emoji, "success", "Bienvenue sur FinaTrack CI — votre argent, clair et local.");
+                }, 400);
+                // Bannière de bienvenue dans le dashboard si présent
+                setTimeout(function(){
+                    const hero = document.getElementById("dashHero");
+                    if (!hero) return;
+                    // Crée une bannière au-dessus du hero si pas déjà présente
+                    if (document.getElementById("welcomeBanner")) return;
+                    const banner = U.el("div", { id:"welcomeBanner", class:"welcome-banner", role:"status", style:{ marginBottom:"16px", padding:"14px 18px", borderRadius:"14px", background:"linear-gradient(135deg,#123C32 0%,#1E5A4A 100%)", color:"#F6F2E8", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px", boxShadow:"0 6px 18px rgba(18,60,50,.22)", border:"1px solid rgba(231,184,75,.25)" }}, [
+                        U.el("div", { style:{ display:"flex", alignItems:"center", gap:"12px" }}, [
+                            U.el("span", { style:{ fontSize:"28px" }, text: emoji }),
+                            U.el("div", {}, [
+                                U.el("div", { style:{ fontWeight:"800", fontSize:"1.05rem", letterSpacing:"-.01em" }, text: greet + " " + firstName + " !"}),
+                                U.el("div", { style:{ opacity:".85", fontSize:".88rem", marginTop:"2px" }, text: "Content de vous revoir — Cocody Angré, Abidjan · " + new Date().toLocaleDateString("fr-FR",{ weekday:"long", day:"numeric", month:"long"})})
+                            ])
+                        ]),
+                        U.el("button", { class:"btn btn-ghost btn-sm", type:"button", text:"✕", attrs:{ "aria-label":"Fermer" }, style:{ color:"#F6F2E8", borderColor:"rgba(255,255,255,.2)" }, on:{ click:function(){ banner.remove(); } } })
+                    ]);
+                    hero.parentNode.insertBefore(banner, hero);
+                    // Auto-disparition après 8s
+                    setTimeout(function(){ if (banner.parentNode) { banner.style.transition="opacity .4s, transform .4s"; banner.style.opacity="0"; banner.style.transform="translateY(-8px)"; setTimeout(function(){ banner.remove(); }, 420); } }, 8000);
+                }, 600);
+            } catch(e){ console.warn("welcome failed", e); }
+        })();
+
         /* Avertissement si LocalStorage est bloqué */
         if (!global.FT.storage.isAvailable()) {
             U.toast("Stockage local indisponible", "warn", "Les données ne seront pas conservées après fermeture du navigateur.");
@@ -1389,7 +1437,7 @@
         /* Premier lancement : proposer le mode démo (§42) */
         setTimeout(maybeOfferDemo, 600);
 
-        console.info("%cFinaTrack CI", "color:#1E5A4A;font-weight:800;font-size:14px", "« Comprenez où va votre argent. » — version 1.0.0");
+        console.info("%cFinaTrack CI", "color:#1E5A4A;font-weight:800;font-size:14px", "« Comprenez où va votre argent. » — version 1.6.0");
     }
 
     /* ======================================================================

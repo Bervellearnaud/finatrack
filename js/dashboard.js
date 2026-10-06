@@ -63,9 +63,16 @@
         return (settings.area || U.LOCAL_CONTEXT.defaultArea).trim() || U.LOCAL_CONTEXT.city;
     }
     function greeting() {
-        const h = new Date().getHours();
+        let h = new Date().getHours();
+        try {
+            const fmt = new Intl.DateTimeFormat("fr-FR", { hour: "numeric", hour12: false, timeZone: "Africa/Abidjan" });
+            const parts = fmt.formatToParts(new Date());
+            const hp = parts.find(function(p){ return p.type==="hour"; });
+            if (hp) h = parseInt(hp.value,10);
+        } catch(e){}
+        if (h < 5) return "Bonsoir";
         if (h < 12) return "Bonjour";
-        if (h < 18) return "Bon après-midi";
+        if (h < 17) return "Bon après-midi";
         return "Bonsoir";
     }
 

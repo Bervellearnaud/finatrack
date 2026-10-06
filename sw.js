@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.5.0";   /* v1.5.0 : Supabase hybride offline-first + auth obligatoire */
+const VERSION = "finatrack-v1.6.0";   /* v1.6.0 : onglet Portefeuilles dédié + message bienvenue personnalisé Bonjour/Bon après-midi/Bonsoir */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
