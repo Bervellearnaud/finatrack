@@ -178,7 +178,7 @@
     }
   } catch(e){}
 
-  form.addEventListener("submit", function(e){
+  form.addEventListener("submit", async function(e){
     e.preventDefault();
     clearError();
     const em = email.value.trim();
@@ -187,28 +187,31 @@
     if (!em || em.indexOf("@")===-1){ showError("Veuillez saisir un e-mail valide."); email.focus(); return; }
     if (!pw || pw.length < 4){ showError("Mot de passe : 4 caractères minimum."); password.focus(); return; }
 
+    submitBtn.disabled = true;
+    submitBtn.textContent = mode === "register" ? "Création..." : "Connexion...";
     try {
       if (mode === "register"){
-        FT.auth.register({ email: em, password: pw, name: nm });
+        await FT.auth.register({ email: em, password: pw, name: nm });
       } else {
-        FT.auth.login(em, pw);
+        await FT.auth.login(em, pw);
       }
       FT.auth.redirectAfterAuth();
     } catch(err){
       showError(err.message || "Erreur de connexion.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === "register" ? "Créer mon compte" : "Se connecter";
     }
   });
 
   const demoBtn = document.getElementById("demoLogin");
   if (demoBtn){
-    demoBtn.addEventListener("click", function(){
-      // Crée un compte démo local rapide
+    demoBtn.addEventListener("click", async function(){
       const demoEmail = "demo@finatrack.local";
       try {
         if (FT.auth.getUsers().some(function(u){ return u.email===demoEmail; })){
-          FT.auth.login(demoEmail, "demo1234");
+          await FT.auth.login(demoEmail, "demo1234");
         } else {
-          FT.auth.register({ email: demoEmail, password: "demo1234", name: "Démo" });
+          await FT.auth.register({ email: demoEmail, password: "demo1234", name: "Démo" });
         }
         FT.auth.redirectAfterAuth();
       } catch(err){

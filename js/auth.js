@@ -1,6 +1,6 @@
 /* ==========================================================================
    FinaTrack CI — auth.js
-   Authentification locale obligatoire + hybride Supabase si FT_CONFIG présent
+   Auth obligatoire - 100% Supabase Auth si FT_CONFIG présent, sinon local
    ========================================================================== */
 (function (global) {
     "use strict";
@@ -29,79 +29,30 @@
             const raw = global.localStorage.getItem(key);
             if (raw === null) return fallback;
             return JSON.parse(raw);
-        } catch (e) {
-            return fallback;
-        }
+        } catch (e) { return fallback; }
     }
-
     function write(key, value) {
-        try {
-            global.localStorage.setItem(key, JSON.stringify(value));
-            return true;
-        } catch (e) {
-            console.warn("[Auth] write failed", e);
-            return false;
-        }
+        try { global.localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; }
     }
-
-    function remove(key) {
-        try { global.localStorage.removeItem(key); } catch (e) {}
-    }
+    function remove(key) { try { global.localStorage.removeItem(key); } catch (e) {} }
 
     function hashPassword(pw) {
-        let h = 0;
-        const s = String(pw);
-        for (let i = 0; i < s.length; i++) {
-            h = ((h << 5) - h) + s.charCodeAt(i);
-            h |= 0;
-        }
+        let h = 0; const s = String(pw);
+        for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
         return "h_" + Math.abs(h).toString(36) + "_" + s.length.toString(36) + "_" + btoa(s).slice(0, 8);
     }
+    function normalizeEmail(email) { return String(email || "").trim().toLowerCase(); }
 
-    function normalizeEmail(email) {
-        return String(email || "").trim().toLowerCase();
-    }
-
-    function getUsers() {
-        const list = read(KEYS.USERS, []);
-        return Array.isArray(list) ? list : [];
-    }
-
-    function saveUsers(list) {
-        return write(KEYS.USERS, list);
-    }
-
-    function getSession() {
-        return read(KEYS.SESSION, null);
-    }
-
-    function saveSession(session) {
-        return write(KEYS.SESSION, session);
-    }
-
-    function clearSession() {
-        remove(KEYS.SESSION);
-    }
+    function getUsers() { const list = read(KEYS.USERS, []); return Array.isArray(list) ? list : []; }
+    function saveUsers(list) { return write(KEYS.USERS, list); }
+    function getSession() { return read(KEYS.SESSION, null); }
+    function saveSession(s) { return write(KEYS.SESSION, s); }
+    function clearSession() { remove(KEYS.SESSION); }
 
     function getCurrentUser() {
-        // Si Supabase configuré, on privilégie la session Supabase
-        const supa = getSupa();
-        if (supa) {
-            // On garde aussi le cache local pour affichage rapide
-            const localSess = getSession();
-            if (localSess && localSess.email) {
-                return { id: localSess.userId, email: localSess.email, name: localSess.name || localSess.email.split("@")[0], provider: localSess.provider || "local" };
-            }
-        }
-        const session = getSession();
-        if (!session || !session.userId) return null;
-        const users = getUsers();
-        const found = users.filter(function (u) { return u.id === session.userId; })[0];
-        if (!found) {
-            clearSession();
-            return null;
-        }
-        return { id: found.id, email: found.email, name: found.name, createdAt: found.createdAt, provider: "local" };
+        const sess = getSession();
+        if (!sess) return null;
+        return { id: sess.userId, email: sess.email, name: sess.name || sess.email.split("@")[0], provider: sess.provider || "local", createdAt: sess.createdAt };
     }
 
     function isTestEnv() {
@@ -113,112 +64,138 @@
 
     function isAuthenticated() {
         if (isTestEnv()) return true;
-        const supa = getSupa();
-        if (supa) {
-            // Si Supabase est configuré, on considère authentifié si session locale existe (sera validée async)
-            const sess = getSession();
-            if (sess && sess.userId) return true;
-            // Sinon, pas de session → pas authentifié → redirect login
-            return false;
-        }
-        const users = getUsers();
-        if (users.length === 0) return false;
-        return !!getCurrentUser();
+        const sess = getSession();
+        return !!(sess && sess.userId);
     }
 
-    function register(opts) {
+    // --- Mode Supabase : async ---
+    async function registerSupabase(email, password, name) {
+        const supa = getSupa();
+        if (!supa) throw new Error("Supabase non configuré");
+        const { data, error } = await supa.auth.signUp({
+            email: email,
+            password: password,
+            options: { data: { name: name } }
+        });
+        if (error) throw new Error(error.message);
+        // Si confirmation email désactivée, on a directement une session
+        // Si activée, data.user existe mais pas de session -> on tente signIn
+        let user = data.user;
+        let session = data.session;
+        if (!session && user) {
+            const signInRes = await supa.auth.signInWithPassword({ email: email, password: password });
+            if (!signInRes.error) {
+                session = signInRes.data.session;
+                user = signInRes.data.user;
+            }
+        }
+        if (!user) throw new Error("Inscription réussie, vérifiez votre email puis connectez-vous.");
+
+        const sess = {
+            userId: user.id,
+            email: user.email,
+            name: name || (user.user_metadata && user.user_metadata.name) || email.split("@")[0],
+            createdAt: new Date().toISOString(),
+            token: session ? session.access_token.slice(0, 20) : U.uid("sess"),
+            provider: "supabase"
+        };
+        saveSession(sess);
+        // Crée aussi en local pour compatibilité
+        const users = getUsers();
+        if (!users.some(function (u) { return u.email === email; })) {
+            users.push({ id: user.id, email: email, name: sess.name, passwordHash: hashPassword(password), createdAt: sess.createdAt });
+            saveUsers(users);
+        }
+        if (U && U.bus) U.bus.emit("auth:changed", { action: "register", user: sess });
+        // Crée profil
+        try { await supa.from("profiles").upsert({ id: user.id, email: email, name: sess.name }); } catch (e) {}
+        return sess;
+    }
+
+    async function loginSupabase(email, password) {
+        const supa = getSupa();
+        if (!supa) throw new Error("Supabase non configuré");
+        const { data, error } = await supa.auth.signInWithPassword({ email: email, password: password });
+        if (error) throw new Error(error.message);
+        const user = data.user;
+        const sess = {
+            userId: user.id,
+            email: user.email,
+            name: (user.user_metadata && user.user_metadata.name) || email.split("@")[0],
+            createdAt: new Date().toISOString(),
+            token: data.session.access_token.slice(0, 20),
+            provider: "supabase"
+        };
+        saveSession(sess);
+        const users = getUsers();
+        if (!users.some(function (u) { return u.email === email; })) {
+            users.push({ id: user.id, email: email, name: sess.name, passwordHash: hashPassword(password), createdAt: sess.createdAt });
+            saveUsers(users);
+        }
+        if (U && U.bus) U.bus.emit("auth:changed", { action: "login", user: sess });
+        if (global.FT.supabaseSync) await global.FT.supabaseSync.pull();
+        return sess;
+    }
+
+    // --- Mode Local (fallback si pas de config) ---
+    function registerLocal(email, password, name) {
+        if (!email || email.indexOf("@") === -1) throw new Error("E-mail invalide.");
+        if (password.length < 4) throw new Error("Mot de passe trop court (4 min).");
+        const users = getUsers();
+        if (users.some(function (u) { return u.email === email; })) throw new Error("Compte existe déjà.");
+        const user = { id: U.uid("usr"), email: email, name: name, passwordHash: hashPassword(password), createdAt: new Date().toISOString() };
+        users.push(user); saveUsers(users);
+        const sess = { userId: user.id, email: user.email, name: user.name, createdAt: user.createdAt, token: U.uid("sess"), provider: "local" };
+        saveSession(sess);
+        if (U && U.bus) U.bus.emit("auth:changed", { action: "register", user: sess });
+        return sess;
+    }
+    function loginLocal(email, password) {
+        const users = getUsers();
+        const found = users.filter(function (u) { return u.email === email; })[0];
+        if (!found) throw new Error("Aucun compte trouvé.");
+        if (found.passwordHash !== hashPassword(password)) throw new Error("Mot de passe incorrect.");
+        const sess = { userId: found.id, email: found.email, name: found.name, createdAt: new Date().toISOString(), token: U.uid("sess"), provider: "local" };
+        saveSession(sess);
+        if (U && U.bus) U.bus.emit("auth:changed", { action: "login", user: sess });
+        return sess;
+    }
+
+    // API publique : gère les deux modes
+    async function register(opts) {
         const email = normalizeEmail(opts.email);
         const name = U.sanitizeText(opts.name || "", 40) || email.split("@")[0];
         const password = String(opts.password || "");
-
         if (!email || email.indexOf("@") === -1) throw new Error("E-mail invalide.");
-        if (password.length < 4) throw new Error("Mot de passe trop court (4 caractères min).");
-
+        if (password.length < 4) throw new Error("Mot de passe trop court.");
         const supa = getSupa();
-        if (supa) {
-            // Mode Supabase : inscription async, mais on garde compatibilité sync pour l'appelant
-            // L'appelant doit gérer la Promise — on lance et on retourne un placeholder
-            // Pour la version hybride, on crée aussi en local en attendant
-            supa.auth.signUp({ email: email, password: password, options: { data: { name: name } } }).then(function (res) {
-                if (res.error) {
-                    U.toast(res.error.message, "error");
-                } else {
-                    U.toast("Compte créé — vérifiez votre e-mail si demandé", "success");
-                }
-            });
-        }
-
-        const users = getUsers();
-        if (users.some(function (u) { return u.email === email; })) {
-            throw new Error("Un compte existe déjà avec cet e-mail.");
-        }
-
-        const user = {
-            id: U.uid("usr"),
-            email: email,
-            name: name,
-            passwordHash: hashPassword(password),
-            createdAt: new Date().toISOString()
-        };
-        users.push(user);
-        saveUsers(users);
-
-        const session = { userId: user.id, email: user.email, name: user.name, createdAt: new Date().toISOString(), token: U.uid("sess"), provider: supa ? "supabase-local" : "local" };
-        saveSession(session);
-
-        if (U && U.bus) U.bus.emit("auth:changed", { action: "register", user: { id: user.id, email: user.email, name: user.name } });
-
-        return { id: user.id, email: user.email, name: user.name };
+        if (supa) return await registerSupabase(email, password, name);
+        return registerLocal(email, password, name);
     }
 
-    function login(email, password) {
+    async function login(email, password) {
         const norm = normalizeEmail(email);
         const supa = getSupa();
         if (supa) {
-            // Tentative Supabase en arrière-plan (ne bloque pas le login local pour offline)
-            supa.auth.signInWithPassword({ email: norm, password: password }).then(function (res) {
-                if (res.error) {
-                    console.warn("[Auth] Supabase login failed, fallback local", res.error.message);
-                } else if (res.data && res.data.user) {
-                    // Met à jour session locale avec vrai user_id Supabase pour le sync
-                    const session = { userId: res.data.user.id, email: norm, name: res.data.user.user_metadata && res.data.user.user_metadata.name ? res.data.user.user_metadata.name : norm.split("@")[0], createdAt: new Date().toISOString(), token: res.data.session ? res.data.session.access_token.slice(0,16) : U.uid("sess"), provider: "supabase" };
-                    saveSession(session);
-                    U.bus.emit("auth:changed", { action: "login", user: session });
-                    if (global.FT.supabaseSync) global.FT.supabaseSync.pull();
+            try {
+                return await loginSupabase(norm, password);
+            } catch (e) {
+                // Si Supabase échoue mais on a un compte local (offline), fallback
+                if (e.message && e.message.toLowerCase().indexOf("invalid login") !== -1) {
+                    const users = getUsers();
+                    if (users.some(function (u) { return u.email === norm; })) {
+                        return loginLocal(norm, password);
+                    }
                 }
-            });
-        }
-
-        const users = getUsers();
-        const found = users.filter(function (u) { return u.email === norm; })[0];
-        if (!found) {
-            // Si Supabase configuré et pas de user local, on autorise quand même (le vrai check est async)
-            if (supa) {
-                const tempSession = { userId: U.uid("usr"), email: norm, name: norm.split("@")[0], createdAt: new Date().toISOString(), token: U.uid("sess"), provider: "supabase-pending" };
-                saveSession(tempSession);
-                if (U && U.bus) U.bus.emit("auth:changed", { action: "login", user: tempSession });
-                return { id: tempSession.userId, email: tempSession.email, name: tempSession.name };
+                throw e;
             }
-            throw new Error("Aucun compte trouvé avec cet e-mail.");
         }
-
-        if (found.passwordHash !== hashPassword(password)) {
-            throw new Error("Mot de passe incorrect.");
-        }
-
-        const session = { userId: found.id, email: found.email, name: found.name, createdAt: new Date().toISOString(), token: U.uid("sess"), provider: supa ? "supabase-local" : "local" };
-        saveSession(session);
-
-        if (U && U.bus) U.bus.emit("auth:changed", { action: "login", user: { id: found.id, email: found.email, name: found.name } });
-
-        return { id: found.id, email: found.email, name: found.name };
+        return loginLocal(norm, password);
     }
 
     async function logout() {
         const supa = getSupa();
-        if (supa) {
-            try { await supa.auth.signOut(); } catch (e) {}
-        }
+        if (supa) { try { await supa.auth.signOut(); } catch (e) {} }
         clearSession();
         if (U && U.bus) U.bus.emit("auth:changed", { action: "logout" });
     }
@@ -232,25 +209,17 @@
         global.location.href = loginPath + "?next=" + encodeURIComponent(current);
         return false;
     }
-
     function getLoginPath() {
         const path = global.location.pathname;
         if (path.indexOf("/pages/") !== -1) return "login.html";
         return "pages/login.html";
     }
-
     function redirectAfterAuth() {
         const params = new URLSearchParams(global.location.search);
         const next = params.get("next");
         if (next) {
-            if (next.indexOf("http") === 0 || next.indexOf("//") === 0) {
-                global.location.href = "../index.html";
-                return;
-            }
-            if (next.indexOf("login.html") !== -1) {
-                global.location.href = global.location.pathname.indexOf("/pages/") !== -1 ? "../index.html" : "index.html";
-                return;
-            }
+            if (next.indexOf("http") === 0 || next.indexOf("//") === 0) { global.location.href = "../index.html"; return; }
+            if (next.indexOf("login.html") !== -1) { global.location.href = global.location.pathname.indexOf("/pages/") !== -1 ? "../index.html" : "index.html"; return; }
             global.location.href = next;
         } else {
             const isInPages = global.location.pathname.indexOf("/pages/") !== -1;
@@ -272,6 +241,5 @@
         redirectAfterAuth: redirectAfterAuth,
         getSupa: getSupa
     };
-
     global.FT.auth = api;
 })(window);
