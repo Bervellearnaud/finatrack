@@ -1084,6 +1084,29 @@
                     }),
                     U.el("input", { type: "file", id: "importFile", accept: "application/json,.json", class: "hidden", on: { change: importJSON } })
                 ]),
+                U.el("button", {
+                    class: "btn btn-ghost btn-sm", type: "button", text: "🔄 Vider le cache et recharger",
+                    on: {
+                        click: function(){
+                            U.confirmDialog({
+                                title: "Vider le cache ?",
+                                message: "Cela force la mise à jour de l'application (utile si une modification ne s'affiche pas). Vos données restent intactes.",
+                                confirmLabel: "Vider et recharger"
+                            }).then(function(ok){
+                                if (!ok) return;
+                                try {
+                                    if ('caches' in window) {
+                                        caches.keys().then(function(keys){ keys.forEach(function(k){ caches.delete(k); }); });
+                                    }
+                                    if (navigator.serviceWorker) {
+                                        navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ r.unregister(); }); });
+                                    }
+                                } catch(e){}
+                                setTimeout(function(){ window.location.reload(true); }, 500);
+                            });
+                        }
+                    }
+                }),
                 hasDemoData()
                     ? U.el("button", {
                         class: "btn btn-ghost btn-sm", type: "button", text: "🗑️ Supprimer les données de démonstration",
