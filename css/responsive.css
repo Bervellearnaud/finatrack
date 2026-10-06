@@ -1,0 +1,529 @@
+/* ==========================================================================
+   FinaTrack CI — responsive.css
+   Approche Mobile First. Points de rupture couverts :
+   320 · 375 · 390 · 430 · 768 · 1024 · 1440
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   BASE MOBILE (320px et au-delà)
+   -------------------------------------------------------------------------- */
+:root { --nav-h: 62px; }
+
+.page { padding-left: var(--sp-3); padding-right: var(--sp-3); }
+
+/* Petit écran (320–359px) : on resserre pour éviter tout débordement */
+@media (max-width: 359px) {
+    body { font-size: 14px; }
+    .page { padding-left: 10px; padding-right: 10px; }
+    .grid-kpi { grid-template-columns: 1fr; }
+    .kpi-value { font-size: 1.2rem; }
+    .card { padding: var(--sp-3); }
+    .card-lg { padding: var(--sp-4); }
+    .hero { padding: var(--sp-4); }
+    .tx { grid-template-columns: auto minmax(0, 1fr) auto; padding: 10px 12px; gap: 10px; }
+    .tx-ico { width: 36px; height: 36px; font-size: 0.95rem; }
+    .tx-amount { font-size: 0.88rem; }
+    .bottom-nav .bn-item { font-size: var(--fs-xs); }
+    .bn-add .fab-btn { width: 50px; height: 50px; font-size: 1.5rem; margin-top: -22px; }
+    .mic-btn { width: 74px; height: 74px; font-size: 1.7rem; }
+    .stat-grid { grid-template-columns: 1fr; }
+}
+
+/* Téléphones courants (375 / 390 / 430) — valeurs par défaut optimisées */
+@media (min-width: 375px) {
+    .page { padding-left: var(--sp-4); padding-right: var(--sp-4); }
+}
+
+@media (min-width: 430px) {
+    .grid-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .page { padding-left: var(--sp-5); padding-right: var(--sp-5); }
+}
+
+/* --------------------------------------------------------------------------
+   LIGNES DE TRANSACTION SUR TÉLÉPHONE (< 768 px)
+   Le montant occupait une colonne large qui écrasait le libellé et coupait
+   les pastilles de moyen de paiement. Sur petit écran, la ligne passe sur
+   deux rangées : titre + montant, puis métadonnées sur toute la largeur.
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+    .tx {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas:
+            "ico   title right"
+            "meta  meta  meta";
+        align-items: center;
+        gap: 6px var(--sp-2);
+    }
+    .tx-ico { grid-area: ico; }
+    .tx-main { display: contents; }
+    .tx-title { grid-area: title; }
+    .tx-meta { grid-area: meta; }
+    .tx > div:last-child { grid-area: right; }
+}
+
+/* --------------------------------------------------------------------------
+   TABLETTE (768px)
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+    :root { --nav-h: 66px; }
+
+    .page { padding: var(--sp-6) var(--sp-6) calc(var(--nav-h) + 90px); max-width: 860px; }
+
+    /* La navigation inférieure reste utile sur tablette tactile */
+    .bottom-nav { left: 50%; transform: translateX(-50%); width: min(560px, calc(100% - 32px)); bottom: 14px; border-radius: var(--r-xl); border: 1px solid var(--border); box-shadow: var(--shadow-lg); overflow: hidden; }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-kpi { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-4); }
+
+    .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .form-grid .span-2 { grid-column: span 2; }
+
+    .filters-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .toolbar { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+    .toolbar .toolbar-full { grid-column: 1 / -1; }
+
+    .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .flow { grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: var(--sp-3); }
+    .flow-step { flex-direction: column; text-align: center; gap: var(--sp-2); padding: var(--sp-4) var(--sp-3); }
+    .flow-arrow { transform: rotate(-90deg); }
+    .flow-arrow.mobile-only { display: none; }
+
+    .hero { padding: var(--sp-6); }
+    .hero h2 { font-size: 1.6rem; }
+
+    /* Sur tablette/desktop, les modales deviennent des fenêtres centrées */
+    .modal { align-items: center; padding: var(--sp-4); }
+    .modal-panel {
+        max-width: 620px; border-radius: var(--r-xl);
+        max-height: 88dvh;
+        animation: modalIn 220ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+    .modal-panel.is-closing { animation: modalOut 160ms ease-in both; }
+    .modal-grip { display: none; }
+    .modal-narrow { max-width: 460px; }
+
+    @keyframes modalIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
+    @keyframes modalOut { to { opacity: 0; transform: translateY(10px) scale(0.99); } }
+
+    .toast-host { left: auto; right: 24px; transform: none; bottom: calc(var(--nav-h) + 30px); width: 380px; }
+
+    /* Tableau détaillé des transactions */
+    .table-detail { display: table; width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .table-detail thead th {
+        text-align: left; padding: 10px var(--sp-4); font-size: var(--fs-xs); letter-spacing: 0.06em;
+        text-transform: uppercase; color: var(--text-soft); font-weight: 800;
+        border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+        white-space: nowrap;
+    }
+    .table-detail tbody td { padding: 12px var(--sp-4); border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); vertical-align: middle; }
+    .table-detail tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+    .table-detail .ta { text-align: right; font-weight: 750; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .table-detail .tc { text-align: center; width: 1%; white-space: nowrap; }
+    .tx-list.is-table { display: none; }
+    .tx-group-label { position: static; }
+
+    .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px var(--sp-5); }
+}
+
+/* --------------------------------------------------------------------------
+   DESKTOP (1024px) — sidebar visible, navigation inférieure masquée
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+    :root { --nav-h: 0px; }
+
+    .bottom-nav { display: none; }
+    .topbar { display: none; }
+    .fab-desktop { display: inline-flex; }
+
+    .sidebar {
+        position: sticky; top: 0; align-self: flex-start;
+        display: flex; flex-direction: column; gap: var(--sp-3);
+        width: var(--sidebar-w); flex: 0 0 var(--sidebar-w);
+        height: 100dvh;
+        padding: var(--sp-5) var(--sp-4);
+        background: linear-gradient(175deg, var(--sidebar-bg), var(--sidebar-bg-2));
+        color: var(--sidebar-text);
+        overflow: hidden auto;
+        z-index: 30;
+    }
+    .sidebar .brand-name { color: #F6F2E8; }
+    .sidebar .brand-tag { color: var(--sidebar-muted); }
+
+    .page {
+        max-width: var(--shell-max);
+        padding: var(--sp-7) var(--sp-7) var(--sp-8);
+    }
+
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-2.uneven { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; }
+    .grid-3.analysis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .hero { padding: var(--sp-7); border-radius: 28px; }
+    .hero h2 { font-size: 1.8rem; }
+    .hero-balance .value { font-size: 2.4rem; }
+
+    .cat-list.two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3) var(--sp-7); }
+
+    .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .filters-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .chart-box.h-300 { height: 320px; }
+    .modal-panel { max-width: 640px; }
+
+    .toast-host { bottom: 24px; }
+}
+
+/* --------------------------------------------------------------------------
+   GRANDS ÉCRANS (1440px et plus)
+   -------------------------------------------------------------------------- */
+@media (min-width: 1440px) {
+    :root { --shell-max: 1240px; --sidebar-w: 288px; }
+
+    body { font-size: 15.5px; }
+    .page { padding: var(--sp-8) var(--sp-8) 56px; }
+    .kpi-value { font-size: 1.55rem; }
+}
+
+/* --------------------------------------------------------------------------
+   AJUSTEMENTS ÉCRANS LARGES ET PAYSAGE
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) and (max-height: 620px) {
+    .sidebar { height: auto; min-height: 100dvh; }
+}
+
+@media (orientation: landscape) and (max-height: 460px) and (max-width: 900px) {
+    .modal { align-items: flex-start; }
+    .modal-panel { max-height: 94dvh; }
+    .sidebar { display: none; }
+}
+
+/* ==========================================================================
+   ADAPTATION MOBILE AVANCÉE (téléphones & tablettes tactiles)
+   --------------------------------------------------------------------------
+   Complète les points de rupture ci-dessus avec ce qui distingue une page web
+   d'une vraie application mobile :
+     • encoches et barres système (env(safe-area-inset-*)) ;
+     • hauteur de fenêtre fiable (--vh) : barre d'adresse et clavier virtuel ;
+     • cibles tactiles confortables (≥ 44 px, 48 px pour les actions clés) ;
+     • suppression du délai de 300 ms (touch-action) ;
+     • clavier virtuel qui ne recouvre plus le champ actif.
+   La logique associée se trouve dans js/mobile.js.
+   ========================================================================== */
+
+@media (max-width: 1023px) {
+    /* --- 1. Hauteur et défilement fiables --- */
+    .app-shell { min-height: calc(var(--vh, 1vh) * 100); }
+
+    main.page {
+        -webkit-overflow-scrolling: touch;
+        scroll-padding-top: 80px;
+    }
+
+    /* --- 2. Encoches / barres système --- */
+    .topbar {
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-left: max(var(--sp-4), env(safe-area-inset-left));
+        padding-right: max(var(--sp-4), env(safe-area-inset-right));
+    }
+
+    .bottom-nav {
+        height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+    }
+
+    .page {
+        padding-bottom: calc((var(--nav-real-h, var(--nav-h))) + 90px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .toast-host {
+        bottom: calc((var(--nav-real-h, var(--nav-h))) + 16px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .offline-bar {
+        margin-left: max(var(--sp-4), env(safe-area-inset-left));
+        margin-right: max(var(--sp-4), env(safe-area-inset-right));
+    }
+
+    /* Mode application installée : pas de barre d'adresse, on peut montrer
+       davantage de contenu et supprimer le bandeau d'information PWA. */
+    .is-standalone .topbar { padding-top: max(8px, env(safe-area-inset-top)); }
+    .is-standalone .page { padding-top: var(--sp-4); }
+
+    /* --- 3. Cibles tactiles --- */
+    button, a, .tx, .chip, .segmented button, .nav-item, .bn-item, .quick-action, .icon-btn {
+        touch-action: manipulation;   /* supprime le délai de 300 ms */
+    }
+    .icon-btn { width: 44px; height: 44px; }
+    .icon-btn.sm { width: 42px; height: 42px; font-size: 0.95rem; }
+    .btn-sm { min-height: 44px; padding: 8px 14px; }
+    .chip { min-height: 40px; padding: 9px 13px; }
+    .segmented button { min-height: 44px; }
+    .tx { min-height: 68px; }
+    .tx-actions .icon-btn.sm { width: 44px; height: 44px; }
+    .nav-item { min-height: 48px; }
+    .example-chip { min-height: 40px; }
+    .modal-foot .btn { min-height: 50px; }
+
+    /* Le bouton « + » et le micro sont les actions les plus utilisées :
+       on les agrandit au-delà du minimum recommandé. */
+    .bn-add .fab-btn { width: 60px; height: 60px; margin-top: -28px; font-size: 1.85rem; }
+    .mic-btn { width: 96px; height: 96px; font-size: 2.2rem; }
+    .mic-wrap { width: 124px; height: 124px; }
+
+    /* --- 4. Mise en page resserrée --- */
+    .card { padding: var(--sp-4); }
+    .card-lg { padding: var(--sp-4); border-radius: var(--r-lg); }
+    .chart-box.h-260 { height: 232px; }
+    .chart-box.h-300 { height: 240px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .modal-panel { max-height: calc(var(--vh, 1vh) * 92); }
+
+    .hero { padding: var(--sp-5) var(--sp-4); }
+    .hero-badges .hero-chip { font-size: var(--fs-sm); padding: 5px 9px; }
+
+    /* Repères de prix : libellé au-dessus du montant sur petit écran */
+    .price-refs { grid-template-columns: 1fr; gap: 2px; }
+    .price-refs dt { margin-top: 8px; }
+    .price-refs dd { text-align: left; }
+
+    /* Sur très petits écrans, le libellé peut occuper 3 lignes :
+       mieux vaut une ligne de plus qu'un texte tronqué. */
+    .tx-title { -webkit-line-clamp: 3; }
+
+    /* Ligne de transaction : la colonne de droite (montant + actions) est
+       resserrée pour laisser respirer le libellé, qui peut tenir 2 lignes. */
+    .tx { grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--sp-2); padding: 12px var(--sp-3); }
+    .tx-ico { width: 36px; height: 36px; border-radius: 10px; font-size: 0.98rem; }
+    .tx-title { font-size: 0.9rem; }
+    .tx-amount { font-size: 0.92rem; }
+    .tx-actions { margin-top: 4px; }
+    .tx-meta { font-size: var(--fs-xs); gap: 5px; }
+
+    /* Sur téléphone, appuyer sur la ligne ouvre la modification :
+       le crayon devient redondant et libère la place du libellé. */
+    .tx-actions .icon-btn:not(.danger) { display: none; }
+    .tx-actions { flex: 0 0 auto; }
+    /* Portefeuilles : deux tuiles par ligne dès 360 px, plein pot avant */
+    .wallet-grid { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; }
+    .wallet-tile { padding: 10px; }
+    .wallet-value { font-size: 1rem; }
+    .wallet-form-row { grid-template-columns: minmax(0, 1fr) 96px; }
+    .wallet-total-value { font-size: 1.3rem; }
+
+    /* Moyens de paiement : libellés plus compacts sur téléphone */
+    .pay-row { padding: 10px 8px; }
+    .pay-row-name { gap: 6px; }
+    .pay-group-count { display: none; }
+    .pay-grand-value { font-size: 1.1rem; }
+
+    /* Le bloc d'actions du héro passe en pleine largeur : plus de bouton coupé */
+    .hero-split { flex-direction: column; align-items: stretch; gap: var(--sp-4); }
+    .hero-split-text { max-width: none; }
+    .hero-split-actions { flex: 1 1 auto; width: 100%; flex-direction: column; }
+    .hero-split-actions .btn { width: 100%; }
+
+    /* Les grilles de cartes restent en une colonne, sans largeur minimale imposée */
+    .grid > *, .grid-2 > *, .grid-3 > * { min-width: 0; }
+
+    /* Les rangées de boutons ne peuvent jamais dépasser l'écran : au pire,
+       elles passent à la ligne au lieu d'élargir la page (et de la dézoomer). */
+    .btn-row { max-width: 100%; }
+    .btn-row .btn { flex: 1 1 auto; }
+    .card-cta .card-cta-actions { flex: 1 1 100%; }
+    .card-cta .card-cta-actions .btn { flex: 1 1 100%; }
+
+    /* Le tableau de bord doit tenir sans défilement horizontal — mais dense : 2 colonnes pour les KPI */
+    .grid-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .grid-2, .grid-3, .grid-3.analysis { grid-template-columns: 1fr; }
+    .stat-grid[style*="repeat(3"] { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+
+/* --- Très petits écrans (320–359 px) : on rétrécit ce qui reste large --- */
+@media (max-width: 359px) {
+    .bottom-nav { --nav-h: 58px; }
+    .bn-add .fab-btn { width: 52px; height: 52px; font-size: 1.6rem; margin-top: -24px; }
+    .mic-btn { width: 78px; height: 78px; font-size: 1.8rem; }
+    .mic-wrap { width: 104px; height: 104px; }
+    .stat-grid { grid-template-columns: 1fr !important; }
+    .cat-row .cr-value { font-size: 0.86rem; }
+    .legend-item { font-size: var(--fs-sm); }
+    .toolbar { padding: var(--sp-3); }
+}
+
+/* --- Téléphones courants : confort de lecture et de frappe --- */
+@media (min-width: 360px) and (max-width: 767px) {
+    .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .toolbar { display: grid; gap: var(--sp-3); }
+    .search-box .input { min-height: 48px; }
+    .input, .select { min-height: 48px; }
+}
+
+/* --- Clavier virtuel ouvert : la navigation basse s'efface --- */
+.kb-open .bottom-nav {
+    transform: translateY(140%);
+    transition: transform 160ms ease;
+}
+.kb-open main.page { padding-bottom: var(--sp-4); }
+.kb-open .fab-desktop { display: none !important; }
+.kb-open .modal-panel { max-height: calc(var(--vh, 1vh) * 62); }
+
+/* --- Mode application installée (PWA) : bandeau d'installation masqué --- */
+.is-standalone [data-action="install-app"] { display: none !important; }
+
+/* --- Appareil tactile : pas d'effet de survol fantôme --- */
+.is-touch .card:hover, .is-touch .kpi:hover, .is-touch .chip:hover { transform: none; }
+.is-touch .btn:hover, .is-touch .icon-btn:hover { box-shadow: none; }
+
+/* --- Tablette : la navigation basse flottante reste dans la zone sûre --- */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .bottom-nav { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+    .toast-host { bottom: calc(var(--nav-h) + 34px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ==========================================================================
+   BUDGET-FIRST — LOT A AJUSTÉ (pages courtes, dense, onglets)
+   Mobile : Essentiel = page 1 courte / Détails = page 2 dans onglet
+   Web : tout visible, onglets masqués
+   ========================================================================== */
+.dash-tabs { display: flex; }
+.dash-tab[hidden] { display: none !important; }
+
+@media (max-width: 1023px) {
+    .dash-budget-first { gap: var(--sp-3); margin-top: var(--sp-3); }
+    .hero-compact-top { flex-direction: row; align-items: flex-start; }
+    .hero-compact-actions { flex-direction: column; }
+    .budget-hero-layout { grid-template-columns: 110px minmax(0,1fr); gap: var(--sp-3); }
+    .budget-gauge-wrap { width: 110px; height: 110px; }
+    .budget-gauge-wrap svg { width: 100px; height: 100px; }
+    .budget-hero-empty { grid-template-columns: 110px minmax(0,1fr); }
+    .budget-gauge-placeholder { width: 110px; height: 110px; }
+    .top3-grid.top3-compact { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+    .top3-card.top3-mini { padding: 10px 6px; }
+    .top3-mini-ico { width: 36px; height: 36px; font-size: 1.25rem; }
+    .top3-mini-name { font-size: 13.5px; }
+    .top3-mini-value { font-size: 14px; }
+    .card-cta-compact { flex-direction: column; align-items: stretch; }
+    .card-cta-compact .btn-row .btn { flex: 1 1 auto; }
+}
+
+@media (max-width: 359px) {
+    .top3-grid.top3-compact { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+    .top3-card.top3-mini { padding: 8px 4px; }
+    .grid-kpi { grid-template-columns: 1fr; }
+    .budget-hero-layout { grid-template-columns: 1fr; }
+    .budget-gauge-wrap { width: 100%; height: 120px; }
+}
+
+@media (min-width: 360px) and (max-width: 767px) {
+    .top3-grid.top3-compact { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .grid-kpi { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .top3-grid.top3-compact { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+    .budget-hero-layout { grid-template-columns: 120px minmax(0,1fr); }
+    .grid-kpi { grid-template-columns: repeat(4, minmax(0,1fr)); }
+}
+
+@media (min-width: 1024px) {
+    .dash-tabs { display: none !important; }
+    .dash-tab { display: grid !important; }
+    .dash-tab[hidden] { display: grid !important; }
+    .dash-budget-first {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        align-items: start;
+        gap: var(--sp-4);
+        margin-top: var(--sp-4);
+    }
+    .dash-budget-first #dashBudget { order: 1; }
+    .dash-budget-first #dashKpis { order: 2; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .top3-grid.top3-compact { grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--sp-3); }
+    .hero-solde.hero-compact { padding: var(--sp-5) var(--sp-6); }
+    .hero-value-huge { font-size: 2.6rem; }
+    .card-cta-compact { flex-direction: row; }
+}
+
+@media (min-width: 1440px) {
+    .top3-grid.top3-compact { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .dash-budget-first { gap: var(--sp-5); }
+}
+
+/* ==========================================================================
+   LISIBILITÉ SUR TÉLÉPHONE (≤ 767 px)
+   Le projet doit rester lisible pour n'importe quel utilisateur : sur un
+   téléphone, on relève le plancher typographique, on laisse les libellés
+   revenir à la ligne au lieu d'être coupés ou cachés, et on agrandit les
+   zones tactiles. Rien de tout cela ne touche le rendu desktop.
+   ========================================================================== */
+@media (max-width: 767px) {
+
+    /* --- 1. Plancher typographique : plus rien sous 12,8 px --- */
+    :root {
+        --fs-xs: 0.82rem;   /* 13,1 px */
+        --fs-sm: 0.84rem;   /* 13,4 px */
+    }
+    body { line-height: 1.6; }
+    .tx-title { line-height: 1.45; }
+    .kpi-label, .stat-label, .fs-label, .field > label, .field-label { letter-spacing: 0.04em; }
+
+    /* --- 2. Aucun texte coupé : les libellés reviennent à la ligne --- */
+    .btn { white-space: normal; text-align: center; line-height: 1.3; }
+    .btn-row .btn, .wallet-foot .btn { min-width: 0; flex: 1 1 100%; }
+    .tag { white-space: normal; }
+    .card, .card-lg, .stack, .grid, .grid-2, .grid-3 { min-width: 0; }
+    .card-head { flex-wrap: wrap; }
+    .row-between { flex-wrap: wrap; gap: 6px; }
+
+    /* --- 3. Filtres et sélecteurs : tout est visible, rien à faire défiler --- */
+    .segmented {
+        flex-wrap: wrap; overflow-x: visible;
+        -webkit-mask-image: none; mask-image: none;
+    }
+    .segmented button { flex: 0 1 auto; min-height: 42px; }
+
+    /* --- 4. Zones tactiles : au moins 44 px de haut (recommandation Apple) --- */
+    .switch { min-height: 48px; }
+    .switch input[type="checkbox"] { width: 54px; height: 32px; }
+    .switch input[type="checkbox"]::after { width: 24px; height: 24px; }
+    .switch input[type="checkbox"]:checked::after { transform: translateX(22px); }
+    .icon-btn { width: 44px; height: 44px; }
+    .btn, .btn-sm, .chip, .bn-item, .quick-action, .segmented button, .icon-btn.sm {
+        min-height: 44px;
+    }
+    /* Boutons réduits à une icône (flèches de mois) : jamais plus étroits que hauts */
+    .btn-row .btn:not(:has(span)) , .btn.icon-only { min-width: 44px; }
+
+    /* --- 4 bis. Barre de navigation du bas : 5 onglets sur 320 px ---
+       Le libellé d'un onglet ne doit jamais se chevaucher avec le voisin.
+       La taille de police est plafonnée (la barre reste une barre), les
+       libellés longs se coupent proprement à la césure française
+       (« Trans-actions ») et la barre gagne la hauteur nécessaire. */
+    .bottom-nav { height: auto; min-height: var(--nav-h); }
+    .bottom-nav .bn-item {
+        min-width: 0; padding: 6px 3px;
+        /* Plancher de 13 px, comme partout ailleurs : si un libellé ne tient
+           pas sur une ligne à 320 px, il passe sur deux lignes (césure
+           française) plutôt que de rétrécir sous le seuil lisible. */
+        font-size: clamp(13px, calc(13px * var(--read-scale) * 0.82), 14px);
+        line-height: 1.15; text-align: center;
+        /* La césure est prévue dans le libellé (&shy;) : le navigateur ne
+           découpe pas au hasard et aucun libellé ne dépasse deux lignes. */
+        hyphens: manual; -webkit-hyphens: manual;
+    }
+    .bottom-nav .bn-ico { font-size: clamp(1.15rem, 1.05rem, 1.35rem); }
+
+    /* --- 5. Boutons larges : le texte respire --- */
+    .btn { padding: 12px 14px; }
+    .btn-sm { min-height: 44px; padding: 9px 14px; }
+
+    /* --- 6. Listes et tableaux : le contenu ne déborde jamais --- */
+    .table-detail, .table-wrap { max-width: 100%; }
+    .tx { min-width: 0; }
+    .tx-amount { white-space: nowrap; }
+}

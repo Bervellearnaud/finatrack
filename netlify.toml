@@ -1,0 +1,56 @@
+# ==========================================================================
+#  FinaTrack CI — configuration de déploiement Netlify
+#
+#  Le site est 100 % statique : « npm run build » ne compile RIEN, il recopie
+#  simplement les fichiers du site dans dist/ (voir tools/build-static.js).
+#
+#  ⚠ Ce fichier est PRIORITAIRE sur les réglages de l'interface Netlify :
+#     si l'interface dit encore « publish: dist » avec « npm run build »,
+#     tout est cohérent — le build produit réellement dist/.
+# ==========================================================================
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Version de Node utilisée pendant le build (le script n'utilise que la
+  # bibliothèque standard : aucune dépendance n'est nécessaire au déploiement).
+  NODE_VERSION = "20"
+  # Les outils de test (Puppeteer/Chromium) ne servent pas au déploiement :
+  # on évite de télécharger ~170 Mo de navigateur pendant l'installation.
+  PUPPETEER_SKIP_DOWNLOAD = "true"
+
+# ==========================================================================
+#  En-têtes HTTP
+# ==========================================================================
+
+# Le service worker doit toujours être re-téléchargé : c'est lui qui livre
+# les mises à jour de l'application aux téléphones déjà installés.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=3600"
+
+# Les icônes ne changent qu'avec une nouvelle version de l'application.
+[[headers]]
+  for = "/assets/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Sécurité (§46 du cahier des charges)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Le microphone reste autorisé pour la fonctionnalité vocale,
+    # et seulement depuis l'application elle-même.
+    Permissions-Policy = "microphone=(self), geolocation=(), camera=()"

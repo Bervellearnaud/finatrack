@@ -1,0 +1,17 @@
+# Dépendances de développement (jsdom, puppeteer) — jamais publiées
+node_modules/
+
+# Dossier produit par « npm run build » (déploiement) — généré, jamais commité
+dist/
+
+# Sorties des CLI Netlify / Vercel
+.netlify/
+.vercel/
+
+# Divers
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+*.log
+js/config.js

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123C32">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FinaTrack">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="finatrack-sw" content="../sw.js">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/icon-32.png">
+<meta name="description" content="Connexion FinaTrack CI — accédez à votre suivi financier local.">
+<title>Connexion · FinaTrack CI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23123C32'/%3E%3Cpath d='M18 44V20h28v6H26v5h16v6H26v7z' fill='%23E7B84B'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--background);
+}
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.login-hero {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: #F6F2E8;
+  padding: 28px 24px 20px;
+  position: relative;
+}
+.login-hero .brand-mark {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--accent); color: var(--primary);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 1.4rem; margin-bottom: 12px;
+}
+.login-hero h1 { font-size: 1.4rem; margin: 0 0 6px; color: #fff; }
+.login-hero p { margin: 0; color: rgba(255,255,255,.82); font-size: .92rem; }
+.login-body { padding: 22px 20px 20px; }
+.login-tabs {
+  display: flex; gap: 6px; padding: 4px;
+  background: var(--surface-2); border-radius: var(--r-pill);
+  margin-bottom: 18px;
+}
+.login-tabs button {
+  flex: 1; border: 0; background: transparent; padding: 9px 12px;
+  border-radius: var(--r-pill); font-weight: 700; font-size: .9rem;
+  cursor: pointer; color: var(--text-soft);
+}
+.login-tabs button.is-active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-xs); }
+.login-field { margin-bottom: 14px; }
+.login-field label { display: block; font-weight: 650; font-size: .88rem; margin-bottom: 6px; }
+.login-field .input { width: 100%; }
+.login-error {
+  display: none; padding: 10px 12px; border-radius: var(--r-sm);
+  background: var(--danger-soft); color: var(--danger-ink);
+  border: 1px solid color-mix(in srgb, var(--danger) 20%, transparent);
+  font-size: .88rem; margin-bottom: 14px;
+}
+.login-error.is-visible { display: block; }
+.login-foot { margin-top: 14px; font-size: var(--fs-sm); color: var(--text-soft); text-align: center; }
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card" role="main" aria-labelledby="loginTitle">
+    <div class="login-hero">
+      <div class="brand-mark" aria-hidden="true">F</div>
+      <h1 id="loginTitle">FinaTrack CI</h1>
+      <p>Connectez-vous pour accéder à votre suivi financier. Données locales, sécurisées dans ce navigateur.</p>
+    </div>
+    <div class="login-body">
+      <div class="login-tabs" role="tablist" aria-label="Mode de connexion">
+        <button type="button" role="tab" data-mode="login" class="is-active" aria-selected="true">Connexion</button>
+        <button type="button" role="tab" data-mode="register" aria-selected="false">Créer un compte</button>
+      </div>
+
+      <div id="loginError" class="login-error" role="alert"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="login-field" id="nameField" hidden>
+          <label for="loginName">Votre prénom</label>
+          <input class="input" type="text" id="loginName" autocomplete="given-name" placeholder="Ex. Awa">
+        </div>
+        <div class="login-field">
+          <label for="loginEmail">E-mail</label>
+          <input class="input" type="email" id="loginEmail" autocomplete="email" required placeholder="vous@exemple.com">
+        </div>
+        <div class="login-field">
+          <label for="loginPassword">Mot de passe</label>
+          <input class="input" type="password" id="loginPassword" autocomplete="current-password" required placeholder="••••••••" minlength="4">
+        </div>
+        <div class="btn-row" style="margin-top:18px">
+          <button class="btn btn-primary" style="width:100%" type="submit" id="loginSubmit">Se connecter</button>
+        </div>
+      </form>
+
+      <div class="login-foot">
+        <div>🔒 Données locales — rien n'est envoyé sur un serveur.</div>
+        <div style="margin-top:8px"><a href="../index.html" style="color:var(--primary);font-weight:600">← Retour</a> · <button type="button" id="demoLogin" class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:.82rem">Essai sans compte</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/vendor/chart.umd.min.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/vendor/supabase.min.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/supabase-sync.js"></script>
+<script>
+(function(){
+  const $ = function(s){ return document.querySelector(s); };
+  const form = $("#loginForm");
+  const email = $("#loginEmail");
+  const password = $("#loginPassword");
+  const nameInput = $("#loginName");
+  const nameField = $("#nameField");
+  const errorBox = $("#loginError");
+  const submitBtn = $("#loginSubmit");
+  const tabs = document.querySelectorAll(".login-tabs [data-mode]");
+  let mode = "login";
+
+  function showError(msg){
+    errorBox.textContent = msg;
+    errorBox.classList.add("is-visible");
+  }
+  function clearError(){
+    errorBox.textContent = "";
+    errorBox.classList.remove("is-visible");
+  }
+
+  function setMode(next){
+    mode = next;
+    tabs.forEach(function(btn){
+      const active = btn.dataset.mode === next;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    if (next === "register"){
+      nameField.hidden = false;
+      submitBtn.textContent = "Créer mon compte";
+      password.setAttribute("autocomplete","new-password");
+    } else {
+      nameField.hidden = true;
+      submitBtn.textContent = "Se connecter";
+      password.setAttribute("autocomplete","current-password");
+    }
+    clearError();
+  }
+
+  tabs.forEach(function(btn){
+    btn.addEventListener("click", function(){ setMode(btn.dataset.mode); });
+  });
+
+  // If already authenticated, redirect
+  try {
+    if (window.FT && FT.auth && FT.auth.isAuthenticated()){
+      FT.auth.redirectAfterAuth();
+      return;
+    }
+  } catch(e){}
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    clearError();
+    const em = email.value.trim();
+    const pw = password.value;
+    const nm = nameInput.value.trim();
+    if (!em || em.indexOf("@")===-1){ showError("Veuillez saisir un e-mail valide."); email.focus(); return; }
+    if (!pw || pw.length < 4){ showError("Mot de passe : 4 caractères minimum."); password.focus(); return; }
+
+    try {
+      if (mode === "register"){
+        FT.auth.register({ email: em, password: pw, name: nm });
+      } else {
+        FT.auth.login(em, pw);
+      }
+      FT.auth.redirectAfterAuth();
+    } catch(err){
+      showError(err.message || "Erreur de connexion.");
+    }
+  });
+
+  const demoBtn = document.getElementById("demoLogin");
+  if (demoBtn){
+    demoBtn.addEventListener("click", function(){
+      // Crée un compte démo local rapide
+      const demoEmail = "demo@finatrack.local";
+      try {
+        if (FT.auth.getUsers().some(function(u){ return u.email===demoEmail; })){
+          FT.auth.login(demoEmail, "demo1234");
+        } else {
+          FT.auth.register({ email: demoEmail, password: "demo1234", name: "Démo" });
+        }
+        FT.auth.redirectAfterAuth();
+      } catch(err){
+        showError(err.message);
+      }
+    });
+  }
+
+  // Autofocus
+  setTimeout(function(){ email.focus(); }, 120);
+})();
+</script>
+</body>
+</html>

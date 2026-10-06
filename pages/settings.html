@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123C32">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FinaTrack">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="finatrack-sw" content="../sw.js">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/icon-32.png">
+<meta name="description" content="Paramètres FinaTrack CI : devise, thème, langue vocale, sauvegarde, données de démonstration et confidentialité.">
+<title>Paramètres · FinaTrack CI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23123C32'/%3E%3Cpath d='M18 44V20h28v6H26v5h16v6H26v7z' fill='%23E7B84B'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Aller au contenu principal</a>
+
+<div class="app-shell">
+    <aside class="sidebar" aria-label="Navigation principale">
+        <span class="kente" aria-hidden="true"></span>
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true">F</span>
+            <span>
+                <span class="brand-name">FINATRACK CI</span>
+                <span class="brand-tag">Comprenez où va votre argent.</span>
+            </span>
+        </div>
+        <nav class="nav" aria-label="Sections">
+            <a class="nav-item" href="../index.html" data-nav="dashboard"><span class="nav-ico" aria-hidden="true">🏠</span><span>Dashboard</span></a>
+            <a class="nav-item" href="transactions.html" data-nav="transactions"><span class="nav-ico" aria-hidden="true">💸</span><span>Trans&shy;actions</span></a>
+            <a class="nav-item" href="incomes.html" data-nav="incomes"><span class="nav-ico" aria-hidden="true">💰</span><span>Revenus</span></a>
+            <a class="nav-item" href="budget.html" data-nav="budget"><span class="nav-ico" aria-hidden="true">🎯</span><span>Budget</span></a>
+            <a class="nav-item" href="analysis.html" data-nav="analysis"><span class="nav-ico" aria-hidden="true">📊</span><span>Analyses</span></a>
+            <a class="nav-item" href="settings.html" data-nav="settings"><span class="nav-ico" aria-hidden="true">⚙️</span><span>Para&shy;mètres</span></a>
+        </nav>
+        <div class="nav-sep" aria-hidden="true"></div>
+        <button class="btn btn-accent btn-block" type="button" data-action="voice-add">🎙️ Ajouter par la voix</button>
+        <div class="sidebar-foot">
+            <strong style="color:#F6F2E8">💾 Sauvegardez</strong><br>
+            Exportez régulièrement vos données : elles vivent uniquement dans ce navigateur.
+        </div>
+    </aside>
+
+    <div class="main-wrap">
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">F</span>
+                <span class="topbar-title" id="topbarTitle">Paramètres</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="icon-btn" type="button" data-action="install-app" hidden aria-label="Installer l'application" title="Installer l'application">📲</button>
+                <a class="icon-btn" href="../index.html" aria-label="Retour à l'accueil" title="Accueil">🏠</a>
+            </div>
+        </header>
+
+        <main class="page" id="main" data-page="settings">
+            <div class="page-head">
+                <h1>⚙️ Paramètres</h1>
+                <p class="page-sub">Devise, apparence, voix, données et confidentialité — tout se règle ici.</p>
+            </div>
+            <div id="settingsContent"></div>
+        </main>
+    </div>
+</div>
+
+<button class="btn btn-accent fab-desktop" type="button" data-action="open-add-menu" aria-label="Ajouter une transaction">+ Ajouter</button>
+
+<nav class="bottom-nav" aria-label="Navigation principale">
+    <a class="bn-item" href="../index.html" data-nav="dashboard"><span class="bn-ico" aria-hidden="true">🏠</span><span>Accueil</span></a>
+    <a class="bn-item" href="transactions.html" data-nav="transactions"><span class="bn-ico" aria-hidden="true">💸</span><span>Trans&shy;actions</span></a>
+    <div class="bn-add">
+        <button class="fab-btn" type="button" data-action="open-add-menu" aria-label="Ajouter une transaction"><span aria-hidden="true">+</span></button>
+    </div>
+    <a class="bn-item" href="analysis.html" data-nav="analysis"><span class="bn-ico" aria-hidden="true">📊</span><span>Analyse</span></a>
+    <a class="bn-item" href="settings.html" data-nav="settings"><span class="bn-ico" aria-hidden="true">⚙️</span><span>Para&shy;mètres</span></a>
+</nav>
+
+<script src="../js/vendor/chart.umd.min.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/vendor/supabase.min.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/supabase-sync.js"></script>
+<script src="../js/supabase-adapter.js"></script>
+<script src="../js/expenses.js"></script>
+<script src="../js/incomes.js"></script>
+<script src="../js/transactions.js"></script>
+<script src="../js/payments.js"></script>
+<script src="../js/budget.js"></script>
+<script src="../js/dashboard.js"></script>
+<script src="../js/analysis.js"></script>
+<script src="../js/charts.js"></script>
+<script src="../js/voiceExpense.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

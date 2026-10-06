@@ -1,0 +1,2 @@
+# Permet à GitHub Pages de publier le dossier tel quel, sans passer par Jekyll.
+# (Jekyll ignore certains fichiers — ce marqueur garantit que tout est servi.)

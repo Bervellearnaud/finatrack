@@ -1,0 +1,79 @@
+{
+    "id": "finatrack-ci-v1",
+    "name": "FinaTrack CI — Comprenez où va votre argent",
+    "short_name": "FinaTrack",
+    "description": "Suivez vos revenus, vos dépenses et votre budget. Ajoutez une dépense simplement en parlant. Données enregistrées localement sur votre appareil.",
+    "lang": "fr",
+    "dir": "ltr",
+    "start_url": "./index.html?source=pwa",
+    "scope": "./",
+    "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
+    "orientation": "portrait-primary",
+    "background_color": "#F5EFE3",
+    "theme_color": "#123C32",
+    "categories": ["finance", "productivity", "utilities"],
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "assets/icons/icon-32.png",
+            "sizes": "32x32",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/icons/icon-180.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/icons/icon-512-maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Ajouter par la voix",
+            "short_name": "Voix",
+            "description": "Dicter une dépense : « J'ai dépensé 2 000 francs pour le taxi »",
+            "url": "./index.html?action=voice",
+            "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        },
+        {
+            "name": "Ajout rapide",
+            "short_name": "Rapide",
+            "description": "Montant + catégorie, en quelques secondes",
+            "url": "./index.html?action=quick",
+            "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        },
+        {
+            "name": "Mes transactions",
+            "short_name": "Transactions",
+            "description": "Rechercher et filtrer l'historique",
+            "url": "./pages/transactions.html",
+            "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        },
+        {
+            "name": "Mon budget",
+            "short_name": "Budget",
+            "description": "Suivre le budget du mois",
+            "url": "./pages/budget.html",
+            "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        }
+    ]
+}

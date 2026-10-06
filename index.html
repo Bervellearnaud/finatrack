@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123C32">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FinaTrack">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="finatrack-sw" content="sw.js">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon-32.png">
+<meta name="description" content="FinaTrack CI — Suivez vos revenus, enregistrez vos dépenses et comprenez où va votre argent.">
+<title>Tableau de bord · FinaTrack CI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23123C32'/%3E%3Cpath d='M18 44V20h28v6H26v5h16v6H26v7z' fill='%23E7B84B'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Aller au contenu principal</a>
+
+<div class="app-shell">
+    <aside class="sidebar" aria-label="Navigation principale">
+        <span class="kente" aria-hidden="true"></span>
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true">F</span>
+            <span>
+                <span class="brand-name">FINATRACK CI</span>
+                <span class="brand-tag">Comprenez où va votre argent.</span>
+            </span>
+        </div>
+        <nav class="nav" aria-label="Sections">
+            <a class="nav-item" href="index.html" data-nav="dashboard"><span class="nav-ico" aria-hidden="true">🏠</span><span>Dashboard</span></a>
+            <a class="nav-item" href="pages/transactions.html" data-nav="transactions"><span class="nav-ico" aria-hidden="true">💸</span><span>Trans&shy;actions</span></a>
+            <a class="nav-item" href="pages/incomes.html" data-nav="incomes"><span class="nav-ico" aria-hidden="true">💰</span><span>Revenus</span></a>
+            <a class="nav-item" href="pages/budget.html" data-nav="budget"><span class="nav-ico" aria-hidden="true">🎯</span><span>Budget</span></a>
+            <a class="nav-item" href="pages/analysis.html" data-nav="analysis"><span class="nav-ico" aria-hidden="true">📊</span><span>Analyses</span></a>
+            <a class="nav-item" href="pages/settings.html" data-nav="settings"><span class="nav-ico" aria-hidden="true">⚙️</span><span>Para&shy;mètres</span></a>
+        </nav>
+        <div class="nav-sep" aria-hidden="true"></div>
+        <button class="btn btn-accent btn-block" type="button" data-action="voice-add">🎙️ Ajouter par la voix</button>
+        <button class="btn btn-ghost btn-block" type="button" data-action="open-add-menu" style="color:var(--sidebar-text);border-color:rgba(255,255,255,.16)">+ Nouvelle transaction</button>
+        <div class="sidebar-foot">
+            <strong style="color:#F6F2E8">🔒 Données locales</strong><br>
+            Vos données restent dans ce navigateur.
+        </div>
+    </aside>
+
+    <div class="main-wrap">
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">F</span>
+                <span class="topbar-title" id="topbarTitle">Tableau de bord</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="icon-btn" type="button" data-action="install-app" hidden aria-label="Installer l'application" title="Installer">📲</button>
+                <button class="icon-btn" type="button" data-action="voice-add" aria-label="Ajouter par la voix" title="Voix">🎙️</button>
+                <a class="icon-btn" href="pages/settings.html" aria-label="Paramètres" title="Paramètres">⚙️</a>
+            </div>
+        </header>
+
+        <main class="page" id="main" data-page="dashboard">
+
+            <!-- 1. SOLDE RÉEL COMPACT — lisible web/mobile -->
+            <section id="dashHero" aria-label="Solde réel" tabindex="-1"></section>
+
+            <!-- Onglets mobile : Essentiel (page 1 courte) / Détails (page 2) -->
+            <div class="segmented dash-tabs" id="dashTabs" role="tablist" aria-label="Vues du tableau de bord">
+                <button class="is-active" type="button" role="tab" data-tab="essentiel" aria-selected="true" aria-controls="dashTabEssentiel">Essentiel</button>
+                <button type="button" role="tab" data-tab="details" aria-selected="false" aria-controls="dashTabDetails">Détails</button>
+            </div>
+
+            <!-- PAGE 1 — ESSENTIEL : courte, dense, max d'infos -->
+            <div id="dashTabEssentiel" class="dash-tab is-active" role="tabpanel">
+                <!-- 2. BUDGET RESTANT — jauge + 3 stats -->
+                <section class="dash-budget-first" aria-label="Budget et indicateurs">
+                    <div id="dashBudget" aria-label="Suivi du budget"></div>
+                    <div class="grid grid-kpi" id="dashKpis" aria-label="Indicateurs du mois"></div>
+                </section>
+
+                <!-- 3. TOP 3 — ultra compact 3 colonnes même sur mobile -->
+                <section class="section" id="dashTop3Section" aria-labelledby="top3Title">
+                    <div class="section-head compact">
+                        <h2 id="top3Title">💸 Où va mon argent ?</h2>
+                        <a class="btn btn-ghost btn-sm" href="pages/transactions.html">Voir tout</a>
+                    </div>
+                    <div id="dashTop3"></div>
+                </section>
+
+                <!-- 4. PORTEFEUILLES — dense -->
+                <section class="section" id="dashWalletsSection" aria-labelledby="dashWalletsTitle">
+                    <div class="card card-lg">
+                        <div class="card-head">
+                            <h3 id="dashWalletsTitle">💰 Mes portefeuilles</h3>
+                            <button class="btn btn-ghost btn-sm" type="button" data-action="edit-wallets">✏️ Ajuster</button>
+                        </div>
+                        <div id="dashWallets"></div>
+                    </div>
+                </section>
+
+                <!-- 5. ACTION + -->
+                <section class="section" aria-labelledby="voiceTitle">
+                    <div class="card card-cta-compact">
+                        <div>
+                            <h3 id="voiceTitle">🎙️ J'ai dépensé</h3>
+                            <p class="muted" style="font-size:var(--fs-sm)">+ ou voix : « 2 000F taxi aujourd'hui » — tu confirmes avant.</p>
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn btn-accent" type="button" data-action="voice-add">🎙️ Parler</button>
+                            <button class="btn btn-primary" type="button" data-action="add-expense">+ Dépense</button>
+                            <button class="btn btn-ghost" type="button" data-action="add-income">+ Revenu</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- PAGE 2 — DÉTAILS — dans l'onglet sur mobile, visible direct sur web -->
+            <div id="dashTabDetails" class="dash-tab" role="tabpanel" hidden>
+                <section class="section card card-lg">
+                    <div class="section-head" style="margin-bottom:6px">
+                        <h3 id="moneyTitle">🧭 Détail par catégorie</h3>
+                        <span class="hint">Ce mois</span>
+                    </div>
+                    <div class="flow" id="dashFlow"></div>
+                    <div class="divider"></div>
+                    <div id="dashCategories"></div>
+                </section>
+
+                <section class="section grid grid-2" aria-labelledby="chartsTitle">
+                    <h2 id="chartsTitle" class="sr-only">Graphiques</h2>
+                    <div class="card card-lg">
+                        <div class="card-head"><h3>🍩 Répartition</h3><span class="hint">Par catégorie</span></div>
+                        <div class="chart-box h-260"><canvas id="chartCategoryDonut" role="img" aria-label="Répartition des dépenses par catégorie"></canvas></div>
+                        <div class="legend" id="donutLegend"></div>
+                    </div>
+                    <div class="card card-lg">
+                        <div class="card-head"><h3>📊 7 derniers jours</h3><span class="hint">Aujourd'hui en orange</span></div>
+                        <div class="chart-box h-260"><canvas id="chartDailyBars" role="img" aria-label="Dépenses des 7 derniers jours"></canvas></div>
+                    </div>
+                </section>
+
+                <section class="section" aria-labelledby="dashPaymentsTitle">
+                    <div class="card card-lg">
+                        <div class="card-head">
+                            <h3 id="dashPaymentsTitle">💳 Par moyen de paiement</h3>
+                            <a class="btn btn-ghost btn-sm" href="pages/analysis.html">Analyse</a>
+                        </div>
+                        <div id="dashPayments"></div>
+                    </div>
+                </section>
+
+                <section class="section grid grid-2 uneven" aria-label="Pistes et dernières transactions">
+                    <div class="card card-lg">
+                        <div class="card-head"><h3>💡 Ce que disent vos chiffres</h3><a class="btn btn-ghost btn-sm" href="pages/analysis.html">Complet</a></div>
+                        <div id="dashInsights"></div>
+                    </div>
+                    <div class="card card-lg">
+                        <div class="card-head"><h3>🧾 Dernières transactions</h3><a class="btn btn-ghost btn-sm" href="pages/transactions.html">Tout voir</a></div>
+                        <div id="dashRecent"></div>
+                    </div>
+                </section>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<button class="btn btn-accent fab-desktop" type="button" data-action="open-add-menu" aria-label="Ajouter une transaction">+ Ajouter</button>
+
+<nav class="bottom-nav" aria-label="Navigation principale">
+    <a class="bn-item" href="index.html" data-nav="dashboard"><span class="bn-ico" aria-hidden="true">🏠</span><span>Accueil</span></a>
+    <a class="bn-item" href="pages/transactions.html" data-nav="transactions"><span class="bn-ico" aria-hidden="true">💸</span><span>Trans&shy;actions</span></a>
+    <div class="bn-add"><button class="fab-btn" type="button" data-action="open-add-menu" aria-label="Ajouter"><span aria-hidden="true">+</span></button></div>
+    <a class="bn-item" href="pages/analysis.html" data-nav="analysis"><span class="bn-ico" aria-hidden="true">📊</span><span>Analyse</span></a>
+    <a class="bn-item" href="pages/settings.html" data-nav="settings"><span class="bn-ico" aria-hidden="true">⚙️</span><span>Para&shy;mètres</span></a>
+</nav>
+
+<script src="js/vendor/chart.umd.min.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/vendor/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/supabase-sync.js"></script>
+<script src="js/supabase-adapter.js"></script>
+<script src="js/expenses.js"></script>
+<script src="js/incomes.js"></script>
+<script src="js/transactions.js"></script>
+<script src="js/payments.js"></script>
+<script src="js/budget.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/analysis.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/voiceExpense.js"></script>
+<script src="js/app.js"></script>
+<script src="js/mobile.js"></script>
+</body>
+</html>

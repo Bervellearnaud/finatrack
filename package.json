@@ -1,0 +1,39 @@
+{
+    "name": "finatrack-ci",
+    "version": "1.5.0",
+    "description": "FinaTrack CI — « Comprenez où va votre argent. » Application de suivi de dépenses et de revenus adaptée au contexte ivoirien, avec ajout d'une dépense par la voix.",
+    "private": true,
+    "keywords": [
+        "fintech",
+        "budget",
+        "depenses",
+        "cote-divoire",
+        "fcfa",
+        "reconnaissance-vocale",
+        "pwa"
+    ],
+    "license": "MIT",
+    "scripts": {
+        "start": "python3 -m http.server 5173",
+        "serve": "python3 -m http.server 5173",
+        "test": "node tests/smoke.js",
+        "screenshots": "node tools/screenshots.js",
+        "icons": "python3 tools/make-icons.py",
+        "preview": "python3 tools/build-preview.py",
+        "build": "node tools/build-static.js",
+        "assets": "python3 tools/make-icons.py && python3 tools/build-preview.py",
+        "deploy:check": "node tools/check-deploy.js",
+        "deploy:netlify": "npx netlify-cli deploy --dir dist --prod",
+        "deploy:vercel": "npx vercel --prod",
+        "audit": "node tools/audit-readability.js",
+        "audit:strict": "FINATRACK_MIN_PX=13 FINATRACK_MIN_TAP=44 node tools/audit-readability.js",
+        "parcours": "node tools/parcours.js"
+    },
+    "devDependencies": {
+        "jsdom": "^29.1.1",
+        "puppeteer": "^24.0.0"
+    },
+    "engines": {
+        "node": ">=18"
+    }
+}
