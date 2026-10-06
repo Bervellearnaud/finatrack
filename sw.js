@@ -20,6 +20,7 @@ const CACHE_NAME = VERSION + "-static";
 const PRECACHE = [
     "./",
     "./index.html",
+    "./pages/wallets.html",
     "./pages/transactions.html",
     "./pages/incomes.html",
     "./pages/budget.html",

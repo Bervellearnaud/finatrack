@@ -52,7 +52,7 @@ function walk(dir) {
     return files;
 }
 
-const PAGES = ["index.html", "pages/transactions.html", "pages/incomes.html",
+const PAGES = ["index.html", "pages/wallets.html", "pages/transactions.html", "pages/incomes.html",
     "pages/budget.html", "pages/analysis.html", "pages/settings.html", "pages/login.html"];
 
 console.log("\nFinaTrack CI — vérifications de déploiement");

@@ -47,6 +47,7 @@ const OPTIONAL_ENTRIES = ["robots.txt", "favicon.ico", ".nojekyll", "_headers", 
 /* Fichiers indispensables dans dist/ : le build échoue s'il en manque un */
 const REQUIRED = [
     "index.html",
+    "pages/wallets.html",
     "pages/transactions.html",
     "pages/incomes.html",
     "pages/budget.html",

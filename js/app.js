@@ -1311,6 +1311,10 @@
 
         /* Le tableau de bord et l'analyse écoutent déjà les événements globaux. */
         if (page === "dashboard") global.FT.dashboard.initDashboard();
+        if (page === "wallets") {
+            // Page dédiée Portefeuilles — rendu géré inline dans wallets.html + bus events
+            if (global.FT.dashboard) global.FT.dashboard.renderWallets && global.FT.dashboard.renderWallets();
+        }
         if (page === "transactions") global.FT.tx.initTransactionsPage();
         if (page === "incomes") global.FT.incomes.initIncomesPage();
         if (page === "budget") global.FT.budget.initBudgetPage();
