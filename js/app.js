@@ -1003,21 +1003,8 @@
             U.el("p", { class: "field-hint", text: "Astuce : le zoom de votre navigateur reste disponible et se combine à ce réglage." })
         ]);
 
-        /* --- Portefeuilles : soldes de départ par moyen de paiement ---
-           On réutilise le rendu de js/payments.js (une seule implémentation
-           pour le tableau de bord et les Paramètres). */
-        const walletHost = U.el("div", { id: "settingsWalletHost" });
-        const walletCard = U.el("div", { class: "card card-lg", id: "settingsWallets" }, [
-            U.el("div", { class: "card-head" }, [
-                U.el("h3", {}, [U.el("span", { text: "💰" }), U.el("span", { text: "Portefeuilles" })]),
-                U.el("span", { class: "muted", style: { fontSize: "var(--fs-sm)" }, text: "Soldes par moyen de paiement" })
-            ]),
-            U.el("p", { class: "muted", text: "Le solde de chaque moyen de paiement se calcule ainsi : ce que vous avez déclaré au départ, plus les revenus reçus par ce moyen, moins les dépenses payées avec lui." }),
-            walletHost
-        ]);
-        global.FT.payments.renderWallets(walletHost, { onEdit: function () { openWalletsForm(); } });
-
-        /* --- Repères locaux retirés sur demande utilisateur : carte supprimée --- */
+        /* Portefeuilles retirés des Paramètres — maintenant onglet dédié 💳 */
+        /* Repères locaux retirés sur demande utilisateur */
 
         const storedKb = (JSON.stringify({
             e: expenses, i: incomes, b: data.getBudgets(), s: settings
@@ -1212,7 +1199,7 @@
             : null;
 
         const grid = U.el("div", { class: "grid grid-2 uneven" }, [
-            U.el("div", { class: "stack" }, [authCard, mobileCard, walletCard, readingCard, profileCard, appearanceCard, categoriesCard].filter(Boolean)),
+            U.el("div", { class: "stack" }, [authCard, mobileCard, readingCard, profileCard, appearanceCard, categoriesCard].filter(Boolean)),
             U.el("div", { class: "stack" }, [dataCard, privacyCard, aboutCard])
         ]);
         host.appendChild(grid);
