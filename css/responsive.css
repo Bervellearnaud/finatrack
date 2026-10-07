@@ -526,4 +526,26 @@
     .table-detail, .table-wrap { max-width: 100%; }
     .tx { min-width: 0; }
     .tx-amount { white-space: nowrap; }
+
+    /* --- 7. Transactions : résultats défilables sur mobile --- */
+    #txList, #walletsTxList, #incomeList, #budgetHistory, #dashTx {
+        max-height: 68vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+        padding-right: 2px;
+    }
+    #txList::-webkit-scrollbar, #walletsTxList::-webkit-scrollbar, #incomeList::-webkit-scrollbar {
+        width: 6px;
+    }
+    #txList::-webkit-scrollbar-thumb, #walletsTxList::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 10px;
+    }
+    .card-flush #txList, .card-flush #walletsTxList {
+        max-height: 72vh;
+    }
 }

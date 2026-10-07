@@ -26,6 +26,16 @@
 .btn-primary { --btn-bg: var(--primary); --btn-fg: #F4F8F6; }
 .btn-primary:hover { --btn-bg: var(--primary-light); }
 
+/* Listes défilables — transactions, portefeuilles, revenus */
+#txList, #walletsTxList, #incomeList, #budgetHistory {
+    max-height: 70vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+.card-flush { overflow: hidden; }
+.card-flush #txList { max-height: 75vh; }
+
 .btn-accent {
     background: linear-gradient(150deg, var(--secondary), var(--accent));
     color: #123C32; font-weight: 750;
