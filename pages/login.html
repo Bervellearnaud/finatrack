@@ -201,7 +201,16 @@
       try { localStorage.setItem("finatrack_show_welcome", "1"); } catch(e){}
       FT.auth.redirectAfterAuth();
     } catch(err){
-      showError(err.message || "Erreur de connexion.");
+      const msg = (err.message || "Erreur de connexion.").toLowerCase();
+      if (msg.indexOf("already registered") !== -1 || msg.indexOf("already exists") !== -1 || msg.indexOf("user already") !== -1) {
+        showError("Ce compte existe déjà. Cliquez sur 'Connexion' pour vous connecter.");
+        // Bascule auto vers Connexion
+        setMode("login");
+        email.value = em;
+        password.focus();
+      } else {
+        showError(err.message || "Erreur de connexion.");
+      }
       submitBtn.disabled = false;
       submitBtn.textContent = mode === "register" ? "Créer mon compte" : "Se connecter";
     }
