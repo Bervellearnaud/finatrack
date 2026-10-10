@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.7.0";   /* v1.7.0 : retire enregistrement local des users, 100% Supabase, logout efface tout finatrack_ */
+const VERSION = "finatrack-v1.8.0";   /* v1.8.0 : toutes les tables connectees - expenses/incomes/budgets/wallets/settings/profiles */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

@@ -160,7 +160,29 @@
                 const localWal = local.getWallets();
                 const merged = Object.assign({}, localWal, map);
                 try { global.localStorage.setItem("finatrack_wallets", JSON.stringify(merged)); } catch (e) {}
+                if (walRemote.length) console.info("[Supabase Sync] pull wallets +" + walRemote.length);
             }
+            // Settings
+            try {
+                const { data: setRemote } = await c.from("settings").select("*").eq("user_id", uid).maybeSingle();
+                if (setRemote) {
+                    const mergedSettings = {
+                        currency: setRemote.currency || "FCFA",
+                        theme: setRemote.theme || "light",
+                        textSize: setRemote.text_size || "normal",
+                        voiceLanguage: setRemote.voice_language || "fr-FR",
+                        area: setRemote.area || "Cocody — Angré",
+                        alertsEnabled: setRemote.alerts_enabled !== false
+                    };
+                    try { global.localStorage.setItem("finatrack_settings", JSON.stringify(mergedSettings)); } catch (e) {}
+                    console.info("[Supabase Sync] pull settings");
+                }
+            } catch (e) { console.warn("[Supabase Sync] pull settings failed", e.message); }
+            // Profiles (just log, not critical for app)
+            try {
+                const { data: profRemote } = await c.from("profiles").select("*").eq("id", uid).maybeSingle();
+                if (profRemote) console.info("[Supabase Sync] pull profile", profRemote.email);
+            } catch (e) {}
 
             U.bus.emit("data:changed", { type: "all", action: "pull" });
         } catch (e) {
@@ -242,6 +264,28 @@
         } catch (e) { console.error("[Supabase Sync] push wallet failed", e.message, e); }
     }
 
+    async function pushSettings(settings) {
+        const c = getClient();
+        let uid = await getUserId();
+        if (!uid) uid = await getUserId(true);
+        if (!c || !uid || !isOnline()) return;
+        try {
+            const row = {
+                user_id: uid,
+                currency: settings.currency || "FCFA",
+                theme: settings.theme || "light",
+                text_size: settings.textSize || "normal",
+                voice_language: settings.voiceLanguage || "fr-FR",
+                area: settings.area || "Cocody — Angré",
+                alerts_enabled: settings.alertsEnabled !== false,
+                updated_at: new Date().toISOString()
+            };
+            const { error } = await c.from("settings").upsert(row, { onConflict: "user_id" });
+            if (error) console.error("[Supabase Sync] push settings error", error);
+            else console.info("[Supabase Sync] push settings ok");
+        } catch (e) { console.error("[Supabase Sync] push settings failed", e.message); }
+    }
+
     function wrapLocalWithSync() {
         const data = global.FT.data;
         if (!data || data.__supabaseWrapped) return;
@@ -308,6 +352,19 @@
             pushWallet(method, amount === "" ? null : v);
             return v;
         };
+
+        const origSaveSettings = data.saveSettings ? data.saveSettings.bind(data) : null;
+        if (origSaveSettings) {
+            data.saveSettings = function (patch) {
+                const v = origSaveSettings(patch);
+                // Récupère settings complets après merge
+                try {
+                    const full = data.getSettings();
+                    pushSettings(full);
+                } catch (e) {}
+                return v;
+            };
+        }
     }
 
     async function init() {
