@@ -512,6 +512,10 @@
             {
                 ico: "💰", title: "Revenu", desc: "Salaire, vente, freelance, cadeau", cls: "",
                 run: function () { modal.close(); openIncomeForm(); }
+            },
+            {
+                ico: "🐖", title: "Épargne", desc: "Tontine, projet maison, urgence", cls: "",
+                run: function () { modal.close(); openSavingsForm(); }
             }
         ];
 

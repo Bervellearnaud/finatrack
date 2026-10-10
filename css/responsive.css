@@ -504,19 +504,15 @@
        La taille de police est plafonnée (la barre reste une barre), les
        libellés longs se coupent proprement à la césure française
        (« Trans-actions ») et la barre gagne la hauteur nécessaire. */
-    .bottom-nav { height: auto; min-height: var(--nav-h); }
+    .bottom-nav { height: auto; min-height: var(--nav-h); gap: 1px; }
     .bottom-nav .bn-item {
-        min-width: 0; padding: 6px 3px;
-        /* Plancher de 13 px, comme partout ailleurs : si un libellé ne tient
-           pas sur une ligne à 320 px, il passe sur deux lignes (césure
-           française) plutôt que de rétrécir sous le seuil lisible. */
-        font-size: clamp(13px, calc(13px * var(--read-scale) * 0.82), 14px);
-        line-height: 1.15; text-align: center;
-        /* La césure est prévue dans le libellé (&shy;) : le navigateur ne
-           découpe pas au hasard et aucun libellé ne dépasse deux lignes. */
+        min-width: 0; padding: 5px 2px;
+        /* 5 onglets + fab sur 320px : on descend à 10px pour que tout tienne, césure française pour Trans-actions */
+        font-size: clamp(10px, calc(10px * var(--read-scale) * 0.85), 11.5px);
+        line-height: 1.1; text-align: center;
         hyphens: manual; -webkit-hyphens: manual;
     }
-    .bottom-nav .bn-ico { font-size: clamp(1.15rem, 1.05rem, 1.35rem); }
+    .bottom-nav .bn-ico { font-size: clamp(1rem, 0.9rem, 1.15rem); }
 
     /* --- 5. Boutons larges : le texte respire --- */
     .btn { padding: 12px 14px; }

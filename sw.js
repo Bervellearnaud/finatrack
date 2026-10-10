@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v2.2.0";   /* v2.2.0 : section epargne liee DB savings + page dediee + dashboard + sync */
+const VERSION = "finatrack-v2.2.1";   /* v2.2.1 : epargne visible sur mobile bottom-nav + menu + */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
