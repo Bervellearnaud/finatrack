@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.8.0";   /* v1.8.0 : toutes les tables connectees - expenses/incomes/budgets/wallets/settings/profiles */
+const VERSION = "finatrack-v1.8.1";   /* v1.8.1 : guard auth immediat anti-flash dashboard + verif session Supabase manquante */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

@@ -1351,6 +1351,24 @@
                     global.FT.auth.requireAuth();
                     return;
                 }
+                // Si Supabase configuré mais session Supabase manquante (ex: compte supprimé ou localStorage vidé partiellement),
+                // on force une reconnexion au lieu d'afficher un dashboard vide avec erreurs "Auth session missing"
+                if (global.FT_CONFIG && global.FT_CONFIG.SUPABASE_URL) {
+                    const sess = global.FT.auth.getSession && global.FT.auth.getSession();
+                    if (sess && sess.provider === "supabase") {
+                        const supa = global.FT.auth.getSupa && global.FT.auth.getSupa();
+                        if (supa) {
+                            supa.auth.getSession().then(function(res){
+                                const hasSession = !!(res && res.data && res.data.session);
+                                if (!hasSession) {
+                                    console.warn("[Auth] Session locale présente mais pas de session Supabase — redirection login");
+                                    try { localStorage.removeItem("finatrack_session"); } catch(e){}
+                                    global.FT.auth.requireAuth();
+                                }
+                            });
+                        }
+                    }
+                }
             }
         } catch (e) { /* ignore */ }
 
