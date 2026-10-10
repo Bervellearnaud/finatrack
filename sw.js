@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.9.1";   /* v1.9.1 : zone non fixe - plus de fallback Cocody force, area libre + banniere bienvenue dynamique */
+const VERSION = "finatrack-v1.9.2";   /* v1.9.2 : retire default Cocody sur profiles.area, zone libre */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

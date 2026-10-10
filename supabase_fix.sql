@@ -108,6 +108,24 @@ begin
 exception when others then null;
 end $$;
 
+-- profiles : retire default Cocody — Angré sur area, laisse vide / nullable
+do $$
+begin
+  -- retire default fixe sur area
+  alter table profiles alter column area drop default;
+  -- permet null si ce n'est pas déjà le cas (au cas où)
+  -- alter table profiles alter column area drop not null; -- optionnel
+exception when others then
+  -- si colonne n'existe pas, on la crée sans default
+  if not exists (select 1 from information_schema.columns where table_name='profiles' and column_name='area') then
+    alter table profiles add column area text;
+  end if;
+end $$;
+
+-- Nettoie les profils existants qui ont Cocody — Angré par défaut alors qu'ils ne l'ont pas choisi
+-- Décommente si tu veux les vider :
+-- update profiles set area = null where area = 'Cocody — Angré';
+
 -- 5. Test rapide : compte les lignes par table pour l'utilisateur courant
 -- (à exécuter connecté)
 -- select 'expenses' as tbl, count(*) from expenses where user_id = auth.uid()
