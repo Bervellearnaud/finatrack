@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.9.2";   /* v1.9.2 : retire default Cocody sur profiles.area, zone libre */
+const VERSION = "finatrack-v1.9.3";   /* v1.9.3 : fix zone Cocody qui revient - retire default DB settings/profiles + area null + dashboard city */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

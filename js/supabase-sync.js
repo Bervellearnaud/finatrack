@@ -279,7 +279,7 @@
                 theme: settings.theme || "light",
                 text_size: settings.textSize || "normal",
                 voice_language: settings.voiceLanguage || "fr-FR",
-                area: settings.area || "Cocody — Angré",
+                area: (settings.area || "").trim() || null,
                 updated_at: new Date().toISOString()
             };
             // Essaie avec alerts_enabled, sinon sans (colonne peut manquer)
