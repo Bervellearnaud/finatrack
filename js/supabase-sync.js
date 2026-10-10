@@ -17,6 +17,10 @@
 
     function getClient() {
         if (client) return client;
+        if (global.FT && global.FT.getSupabaseClient) {
+            client = global.FT.getSupabaseClient();
+            return client;
+        }
         const cfg = global.FT_CONFIG || {};
         if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return null;
         if (!global.supabase) {
@@ -24,7 +28,7 @@
             return null;
         }
         client = global.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
-            auth: { persistSession: true, autoRefreshToken: true }
+            auth: { persistSession: true, autoRefreshToken: true, storage: global.localStorage }
         });
         return client;
     }

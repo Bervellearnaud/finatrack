@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.0.0";   /* v3.0.0 : 100% Supabase, plus de session locale, auth via sb- token uniquement */
+const VERSION = "finatrack-v3.0.1";   /* v3.0.1 : fix rien ne s'enregistre - singleton supabase client + savings RLS + logs */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
@@ -34,6 +34,8 @@ const PRECACHE = [
     "./js/utils.js",
     "./js/storage.js",
     "./js/config.js",
+    "./js/vendor/supabase.min.js",
+    "./js/supabase-client.js",
     "./js/auth.js",
     "./js/supabase-sync.js",
     "./js/supabase-adapter.js",

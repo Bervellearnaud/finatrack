@@ -6,6 +6,7 @@ alter table expenses enable row level security;
 alter table incomes enable row level security;
 alter table budgets enable row level security;
 alter table wallets enable row level security;
+alter table savings enable row level security;
 alter table settings enable row level security;
 alter table profiles enable row level security;
 
@@ -14,12 +15,14 @@ drop policy if exists "Users can manage own expenses" on expenses;
 drop policy if exists "Users can manage own incomes" on incomes;
 drop policy if exists "Users can manage own budgets" on budgets;
 drop policy if exists "Users can manage own wallets" on wallets;
+drop policy if exists "Users can manage own savings" on savings;
 drop policy if exists "Users can manage own settings" on settings;
 drop policy if exists "Users can manage own profiles" on profiles;
 drop policy if exists "Enable all for authenticated" on expenses;
 drop policy if exists "Enable all for authenticated" on incomes;
 drop policy if exists "Enable all for authenticated" on budgets;
 drop policy if exists "Enable all for authenticated" on wallets;
+drop policy if exists "Enable all for authenticated" on savings;
 drop policy if exists "Enable all for authenticated" on settings;
 
 -- 3. Créer policies complètes (all = SELECT + INSERT + UPDATE + DELETE)
@@ -40,6 +43,11 @@ with check (auth.uid() = user_id);
 
 create policy "Users can manage own wallets"
 on wallets for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "Users can manage own savings"
+on savings for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 

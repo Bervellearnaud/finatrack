@@ -14,11 +14,15 @@
     let supaClient = null;
     function getSupa() {
         if (supaClient) return supaClient;
+        if (global.FT && global.FT.getSupabaseClient) {
+            supaClient = global.FT.getSupabaseClient();
+            return supaClient;
+        }
         const cfg = global.FT_CONFIG || {};
         if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return null;
         if (!global.supabase) return null;
         supaClient = global.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
-            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: global.localStorage }
         });
         return supaClient;
     }
