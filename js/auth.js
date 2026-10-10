@@ -1,16 +1,15 @@
 /* ==========================================================================
    FinaTrack CI — auth.js
-   Auth obligatoire - 100% Supabase Auth si FT_CONFIG présent, sinon local
+   v3.0.0 : 100% Supabase, plus de session locale finatrack_session comme source
+   - Auth uniquement via supabase.auth (signUp / signInWithPassword)
+   - Pas de finatrack_users, pas de hash local quand FT_CONFIG présent
+   - finatrack_session ne sert que de cache d'affichage rapide, pas de source de vérité
+   - isAuthenticated vérifie la vraie session Supabase (sb-...-auth-token)
    ========================================================================== */
 (function (global) {
     "use strict";
 
     const U = global.FT.utils;
-
-    const KEYS = {
-        USERS: "finatrack_users",
-        SESSION: "finatrack_session"
-    };
 
     let supaClient = null;
     function getSupa() {
@@ -19,40 +18,34 @@
         if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return null;
         if (!global.supabase) return null;
         supaClient = global.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
-            auth: { persistSession: true, autoRefreshToken: true }
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         });
         return supaClient;
     }
 
-    function read(key, fallback) {
+    function hasSupabaseSessionSync() {
         try {
-            const raw = global.localStorage.getItem(key);
-            if (raw === null) return fallback;
-            return JSON.parse(raw);
-        } catch (e) { return fallback; }
-    }
-    function write(key, value) {
-        try { global.localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; }
-    }
-    function remove(key) { try { global.localStorage.removeItem(key); } catch (e) {} }
-
-    function hashPassword(pw) {
-        let h = 0; const s = String(pw);
-        for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
-        return "h_" + Math.abs(h).toString(36) + "_" + s.length.toString(36) + "_" + btoa(s).slice(0, 8);
-    }
-    function normalizeEmail(email) { return String(email || "").trim().toLowerCase(); }
-
-    function getUsers() { const list = read(KEYS.USERS, []); return Array.isArray(list) ? list : []; }
-    function saveUsers(list) { return write(KEYS.USERS, list); }
-    function getSession() { return read(KEYS.SESSION, null); }
-    function saveSession(s) { return write(KEYS.SESSION, s); }
-    function clearSession() { remove(KEYS.SESSION); }
-
-    function getCurrentUser() {
-        const sess = getSession();
-        if (!sess) return null;
-        return { id: sess.userId, email: sess.email, name: sess.name || sess.email.split("@")[0], provider: sess.provider || "local", createdAt: sess.createdAt };
+            // Supabase stocke la session sous sb-<project>-auth-token
+            for (let i = 0; i < global.localStorage.length; i++) {
+                const k = global.localStorage.key(i);
+                if (k && k.indexOf("sb-") === 0 && k.indexOf("auth-token") !== -1) {
+                    const raw = global.localStorage.getItem(k);
+                    if (raw) {
+                        try {
+                            const parsed = JSON.parse(raw);
+                            // format v2: { access_token, refresh_token, user }
+                            if (parsed && (parsed.access_token || (parsed.user && parsed.user.id))) return true;
+                            // parfois c'est un objet avec currentSession
+                            if (parsed && parsed.currentSession) return true;
+                        } catch (e) {
+                            // si pas JSON, mais présent, on considère comme session
+                            if (raw.length > 20) return true;
+                        }
+                    }
+                }
+            }
+        } catch (e) {}
+        return false;
     }
 
     function isTestEnv() {
@@ -64,11 +57,66 @@
 
     function isAuthenticated() {
         if (isTestEnv()) return true;
-        const sess = getSession();
-        return !!(sess && sess.userId);
+        // Si Supabase configuré, la vraie source est la session Supabase, pas finatrack_session
+        const cfg = global.FT_CONFIG || {};
+        if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
+            return hasSupabaseSessionSync();
+        }
+        // Fallback local si pas de config (dev offline)
+        try {
+            const sess = global.localStorage.getItem("finatrack_session");
+            return !!sess;
+        } catch (e) { return false; }
     }
 
-    // --- Mode Supabase : async ---
+    function getCurrentUser() {
+        // Essaie de lire depuis la session Supabase stockée
+        try {
+            for (let i = 0; i < global.localStorage.length; i++) {
+                const k = global.localStorage.key(i);
+                if (k && k.indexOf("sb-") === 0 && k.indexOf("auth-token") !== -1) {
+                    const raw = global.localStorage.getItem(k);
+                    if (!raw) continue;
+                    try {
+                        const parsed = JSON.parse(raw);
+                        const user = parsed.user || (parsed.currentSession && parsed.currentSession.user) || null;
+                        if (user) {
+                            return {
+                                id: user.id,
+                                email: user.email,
+                                name: (user.user_metadata && user.user_metadata.name) || user.email.split("@")[0],
+                                provider: "supabase"
+                            };
+                        }
+                    } catch (e) {}
+                }
+            }
+        } catch (e) {}
+        // Fallback finatrack_session cache
+        try {
+            const raw = global.localStorage.getItem("finatrack_session");
+            if (raw) {
+                const sess = JSON.parse(raw);
+                if (sess && sess.userId) {
+                    return { id: sess.userId, email: sess.email, name: sess.name || sess.email.split("@")[0], provider: sess.provider || "supabase" };
+                }
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    async function getUserIdAsync() {
+        const supa = getSupa();
+        if (!supa) return null;
+        try {
+            const { data: { session } } = await supa.auth.getSession();
+            if (session && session.user) return session.user.id;
+            const { data: { user } } = await supa.auth.getUser();
+            if (user) return user.id;
+        } catch (e) {}
+        return null;
+    }
+
     async function registerSupabase(email, password, name) {
         const supa = getSupa();
         if (!supa) throw new Error("Supabase non configuré");
@@ -78,34 +126,42 @@
             options: { data: { name: name } }
         });
         if (error) throw new Error(error.message);
-        // Si confirmation email désactivée, on a directement une session
-        // Si activée, data.user existe mais pas de session -> on tente signIn
+
         let user = data.user;
         let session = data.session;
+
         if (!session && user) {
             const signInRes = await supa.auth.signInWithPassword({ email: email, password: password });
-            if (!signInRes.error) {
+            if (signInRes.error) {
+                // Si email confirmation encore active, on l'indique
+                if (signInRes.error.message.toLowerCase().indexOf("confirm") !== -1) {
+                    throw new Error("Vérifiez votre e-mail pour confirmer, puis connectez-vous.");
+                }
+                // Sinon on garde l'user sans session
+            } else {
                 session = signInRes.data.session;
                 user = signInRes.data.user;
             }
         }
+
         if (!user) throw new Error("Inscription réussie, vérifiez votre email puis connectez-vous.");
 
-        const sess = {
-            userId: user.id,
-            email: user.email,
-            name: name || (user.user_metadata && user.user_metadata.name) || email.split("@")[0],
-            createdAt: new Date().toISOString(),
-            token: session ? session.access_token.slice(0, 20) : U.uid("sess"),
-            provider: "supabase"
-        };
-        saveSession(sess);
-        // Ne plus enregistrer en local quand Supabase est configuré — 100% cloud
-        // (on garde juste la session, pas finatrack_users)
-        if (U && U.bus) U.bus.emit("auth:changed", { action: "register", user: sess });
-        // Crée profil
-        try { await supa.from("profiles").upsert({ id: user.id, email: email, name: sess.name }); } catch (e) {}
-        return sess;
+        // Cache léger pour affichage rapide (pas source de vérité)
+        try {
+            localStorage.setItem("finatrack_session", JSON.stringify({
+                userId: user.id,
+                email: user.email,
+                name: name || (user.user_metadata && user.user_metadata.name) || email.split("@")[0],
+                provider: "supabase",
+                createdAt: new Date().toISOString()
+            }));
+        } catch (e) {}
+
+        if (U && U.bus) U.bus.emit("auth:changed", { action: "register", user: { id: user.id, email: user.email } });
+
+        try { await supa.from("profiles").upsert({ id: user.id, email: email, name: name || email.split("@")[0], area: null }); } catch (e) {}
+
+        return { userId: user.id, email: user.email, name: name };
     }
 
     async function loginSupabase(email, password) {
@@ -113,47 +169,37 @@
         if (!supa) throw new Error("Supabase non configuré");
         const { data, error } = await supa.auth.signInWithPassword({ email: email, password: password });
         if (error) throw new Error(error.message);
+
         const user = data.user;
-        const sess = {
-            userId: user.id,
-            email: user.email,
-            name: (user.user_metadata && user.user_metadata.name) || email.split("@")[0],
-            createdAt: new Date().toISOString(),
-            token: data.session.access_token.slice(0, 20),
-            provider: "supabase"
-        };
-        saveSession(sess);
-        // Pas de stockage local des users quand Supabase est là
-        if (U && U.bus) U.bus.emit("auth:changed", { action: "login", user: sess });
-        if (global.FT.supabaseSync) await global.FT.supabaseSync.pull();
-        return sess;
+        try {
+            localStorage.setItem("finatrack_session", JSON.stringify({
+                userId: user.id,
+                email: user.email,
+                name: (user.user_metadata && user.user_metadata.name) || email.split("@")[0],
+                provider: "supabase",
+                createdAt: new Date().toISOString()
+            }));
+        } catch (e) {}
+
+        if (U && U.bus) U.bus.emit("auth:changed", { action: "login", user: { id: user.id, email: user.email } });
+
+        if (global.FT.supabaseSync) {
+            try { await global.FT.supabaseSync.pull(); } catch (e) {}
+        }
+
+        return { userId: user.id, email: user.email };
     }
 
-    // --- Mode Local (fallback si pas de config) ---
-    function registerLocal(email, password, name) {
-        if (!email || email.indexOf("@") === -1) throw new Error("E-mail invalide.");
-        if (password.length < 4) throw new Error("Mot de passe trop court (4 min).");
-        const users = getUsers();
-        if (users.some(function (u) { return u.email === email; })) throw new Error("Compte existe déjà.");
-        const user = { id: U.uid("usr"), email: email, name: name, passwordHash: hashPassword(password), createdAt: new Date().toISOString() };
-        users.push(user); saveUsers(users);
-        const sess = { userId: user.id, email: user.email, name: user.name, createdAt: user.createdAt, token: U.uid("sess"), provider: "local" };
-        saveSession(sess);
-        if (U && U.bus) U.bus.emit("auth:changed", { action: "register", user: sess });
-        return sess;
-    }
+    // Fallback local uniquement si pas de config Supabase
+    function normalizeEmail(email) { return String(email || "").trim().toLowerCase(); }
+
     function loginLocal(email, password) {
-        const users = getUsers();
-        const found = users.filter(function (u) { return u.email === email; })[0];
-        if (!found) throw new Error("Aucun compte trouvé.");
-        if (found.passwordHash !== hashPassword(password)) throw new Error("Mot de passe incorrect.");
-        const sess = { userId: found.id, email: found.email, name: found.name, createdAt: new Date().toISOString(), token: U.uid("sess"), provider: "local" };
-        saveSession(sess);
-        if (U && U.bus) U.bus.emit("auth:changed", { action: "login", user: sess });
-        return sess;
+        throw new Error("Mode local désactivé — configurez Supabase.");
+    }
+    function registerLocal() {
+        throw new Error("Mode local désactivé — configurez Supabase.");
     }
 
-    // API publique : gère les deux modes
     async function register(opts) {
         const email = normalizeEmail(opts.email);
         const name = U.sanitizeText(opts.name || "", 40) || email.split("@")[0];
@@ -162,52 +208,36 @@
         if (password.length < 4) throw new Error("Mot de passe trop court.");
         const supa = getSupa();
         if (supa) return await registerSupabase(email, password, name);
-        return registerLocal(email, password, name);
+        return registerLocal();
     }
 
     async function login(email, password) {
         const norm = normalizeEmail(email);
         const supa = getSupa();
         if (supa) {
-            // Quand Supabase est configuré, on exige une session Supabase
-            // Le fallback local n'est autorisé que si on est hors ligne
-            try {
-                return await loginSupabase(norm, password);
-            } catch (e) {
-                const msg = (e.message || "").toLowerCase();
-                const offline = typeof navigator !== "undefined" && !navigator.onLine;
-                if (offline) {
-                    const users = getUsers();
-                    if (users.some(function (u) { return u.email === norm; })) {
-                        console.warn("[Auth] Offline fallback local pour", norm);
-                        return loginLocal(norm, password);
-                    }
-                }
-                // Pas de fallback silencieux en ligne : on remonte l'erreur Supabase
-                if (msg.indexOf("invalid login") !== -1 || msg.indexOf("invalid") !== -1) {
-                    throw new Error("E-mail ou mot de passe incorrect (Supabase).");
-                }
-                throw e;
-            }
+            return await loginSupabase(norm, password);
         }
-        return loginLocal(norm, password);
+        return loginLocal();
     }
 
     async function logout() {
-        // 1. Clear local session IMMEDIATEMENT (synchrone) pour éviter reconnexion instantanée
-        clearSession();
-        // 2. Nettoie aussi le storage Supabase (sb-...-auth-token) synchrone
+        // Supprime TOUT : session Supabase + cache finatrack_
         try {
             const keysToRemove = [];
             for (let i = 0; i < global.localStorage.length; i++) {
                 const k = global.localStorage.key(i);
-                if (k && (k.indexOf("sb-") === 0 || k.indexOf("supabase") !== -1 || k.indexOf("finatrack_") === 0)) keysToRemove.push(k);
+                if (k && (k.indexOf("sb-") === 0 || k.indexOf("supabase") !== -1 || k.indexOf("finatrack_") === 0)) {
+                    keysToRemove.push(k);
+                }
             }
             keysToRemove.forEach(function (k) { try { global.localStorage.removeItem(k); } catch (e) {} });
         } catch (e) {}
-        // 3. Déconnexion Supabase async en arrière-plan
+
         const supa = getSupa();
-        if (supa) { try { await supa.auth.signOut(); } catch (e) {} }
+        if (supa) {
+            try { await supa.auth.signOut(); } catch (e) {}
+        }
+
         if (U && U.bus) U.bus.emit("auth:changed", { action: "logout" });
     }
 
@@ -220,11 +250,13 @@
         global.location.href = loginPath + "?next=" + encodeURIComponent(current);
         return false;
     }
+
     function getLoginPath() {
         const path = global.location.pathname;
         if (path.indexOf("/pages/") !== -1) return "login.html";
         return "pages/login.html";
     }
+
     function redirectAfterAuth() {
         const params = new URLSearchParams(global.location.search);
         const next = params.get("next");
@@ -239,9 +271,6 @@
     }
 
     const api = {
-        KEYS: KEYS,
-        getUsers: getUsers,
-        getSession: getSession,
         getCurrentUser: getCurrentUser,
         isAuthenticated: isAuthenticated,
         register: register,
@@ -250,7 +279,19 @@
         requireAuth: requireAuth,
         getLoginPath: getLoginPath,
         redirectAfterAuth: redirectAfterAuth,
-        getSupa: getSupa
+        getSupa: getSupa,
+        getUserIdAsync: getUserIdAsync,
+        hasSupabaseSessionSync: hasSupabaseSessionSync,
+        // Compatibilité ancienne API
+        getUsers: function () { return []; },
+        getSession: function () {
+            try {
+                const raw = localStorage.getItem("finatrack_session");
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
     };
+
     global.FT.auth = api;
+
 })(window);
