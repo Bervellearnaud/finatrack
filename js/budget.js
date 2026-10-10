@@ -218,8 +218,12 @@
                         attrs: { "aria-label": "Mois suivant" },
                         on: {
                             click: function () {
-                                const next = U.monthKey(new Date(U.fromISODate(viewingMonth + "-01").getFullYear(), U.fromISODate(viewingMonth + "-01").getMonth() + 1, 1));
-                                if (next > U.monthKey()) return;
+                                // Permet maintenant les mois à venir (jusqu'à +24 mois) pour planifier
+                                const base = U.fromISODate(viewingMonth + "-01");
+                                const next = U.monthKey(new Date(base.getFullYear(), base.getMonth() + 1, 1));
+                                // Limite à 24 mois dans le futur pour éviter dérive infinie
+                                const maxFuture = U.monthKey(new Date(new Date().getFullYear(), new Date().getMonth() + 24, 1));
+                                if (next > maxFuture) return;
                                 viewingMonth = next;
                                 renderBudgetPage();
                             }

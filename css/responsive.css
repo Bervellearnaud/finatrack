@@ -548,4 +548,9 @@
     .card-flush #txList, .card-flush #walletsTxList {
         max-height: 72vh;
     }
+
+    /* Transactions mobile : retire premier bloc (totaux par moyen de paiement), garde deuxième (Résultats) */
+    #txPaymentSummary {
+        display: none !important;
+    }
 }

@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v2.0.0";   /* v2.0.0 : systeme de localisation auto GPS, plus besoin saisie manuelle zone */
+const VERSION = "finatrack-v2.1.0";   /* v2.1.0 : budget mois futurs + transactions mobile retire bloc 1 + bottom nav settings + topbar analyse */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
