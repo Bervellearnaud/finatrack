@@ -268,22 +268,33 @@
         const c = getClient();
         let uid = await getUserId();
         if (!uid) uid = await getUserId(true);
-        if (!c || !uid || !isOnline()) return;
+        if (!c || !uid || !isOnline()) {
+            console.warn("[Supabase Sync] push settings skipped — no uid");
+            return;
+        }
         try {
-            const row = {
+            const baseRow = {
                 user_id: uid,
                 currency: settings.currency || "FCFA",
                 theme: settings.theme || "light",
                 text_size: settings.textSize || "normal",
                 voice_language: settings.voiceLanguage || "fr-FR",
                 area: settings.area || "Cocody — Angré",
-                alerts_enabled: settings.alertsEnabled !== false,
                 updated_at: new Date().toISOString()
             };
-            const { error } = await c.from("settings").upsert(row, { onConflict: "user_id" });
+            // Essaie avec alerts_enabled, sinon sans (colonne peut manquer)
+            let rowWithAlert = Object.assign({}, baseRow, { alerts_enabled: settings.alertsEnabled !== false });
+            let { error } = await c.from("settings").upsert(rowWithAlert, { onConflict: "user_id" });
+            if (error && error.message && error.message.toLowerCase().indexOf("alerts_enabled") !== -1) {
+                console.warn("[Supabase Sync] alerts_enabled column missing, retry without");
+                const res2 = await c.from("settings").upsert(baseRow, { onConflict: "user_id" });
+                if (res2.error) console.error("[Supabase Sync] push settings error", res2.error);
+                else console.info("[Supabase Sync] push settings ok (without alerts_enabled)");
+                return;
+            }
             if (error) console.error("[Supabase Sync] push settings error", error);
             else console.info("[Supabase Sync] push settings ok");
-        } catch (e) { console.error("[Supabase Sync] push settings failed", e.message); }
+        } catch (e) { console.error("[Supabase Sync] push settings failed", e.message, e); }
     }
 
     function wrapLocalWithSync() {

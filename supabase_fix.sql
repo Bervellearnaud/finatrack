@@ -76,9 +76,42 @@ begin
 exception when duplicate_table then null;
 end $$;
 
+-- settings : colonnes manquantes et contrainte unique
+do $$
+begin
+  -- ajoute colonnes si elles n'existent pas
+  if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='currency') then
+    alter table settings add column currency text default 'FCFA';
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='theme') then
+    alter table settings add column theme text default 'light';
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='text_size') then
+    alter table settings add column text_size text default 'normal';
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='voice_language') then
+    alter table settings add column voice_language text default 'fr-FR';
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='area') then
+    alter table settings add column area text default 'Cocody — Angré';
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='alerts_enabled') then
+    alter table settings add column alerts_enabled boolean default true;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='updated_at') then
+    alter table settings add column updated_at timestamptz default now();
+  end if;
+  -- contrainte unique user_id
+  if not exists (select 1 from pg_constraint where conname = 'settings_user_unique') then
+    alter table settings add constraint settings_user_unique unique (user_id);
+  end if;
+exception when others then null;
+end $$;
+
 -- 5. Test rapide : compte les lignes par table pour l'utilisateur courant
 -- (à exécuter connecté)
 -- select 'expenses' as tbl, count(*) from expenses where user_id = auth.uid()
 -- union all select 'incomes', count(*) from incomes where user_id = auth.uid()
 -- union all select 'budgets', count(*) from budgets where user_id = auth.uid()
--- union all select 'wallets', count(*) from wallets where user_id = auth.uid();
+-- union all select 'wallets', count(*) from wallets where user_id = auth.uid()
+-- union all select 'settings', count(*) from settings where user_id = auth.uid();
