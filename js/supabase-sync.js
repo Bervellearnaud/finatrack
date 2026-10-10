@@ -29,14 +29,29 @@
         return client;
     }
 
-    async function getUserId() {
-        if (userId) return userId;
+    async function getUserId(force) {
+        if (userId && !force) return userId;
         const c = getClient();
         if (!c) return null;
         try {
-            const { data: { user } } = await c.auth.getUser();
-            if (user) userId = user.id;
-        } catch (e) {}
+            // 1. Essaie session (plus rapide, en cache)
+            const { data: { session } } = await c.auth.getSession();
+            if (session && session.user) {
+                userId = session.user.id;
+                return userId;
+            }
+            // 2. Sinon getUser (appel réseau)
+            const { data: { user }, error } = await c.auth.getUser();
+            if (error) {
+                console.warn("[Supabase Sync] getUser error", error.message);
+            }
+            if (user) {
+                userId = user.id;
+                return userId;
+            }
+        } catch (e) {
+            console.warn("[Supabase Sync] getUserId failed", e.message);
+        }
         return userId;
     }
 
@@ -155,40 +170,69 @@
 
     async function pushExpense(e) {
         const c = getClient();
-        const uid = await getUserId();
-        if (!c || !uid || !isOnline()) return;
+        let uid = await getUserId();
+        if (!uid) uid = await getUserId(true);
+        if (!c || !uid || !isOnline()) {
+            console.warn("[Supabase Sync] push expense skipped — no uid", { uid: uid, online: isOnline() });
+            return;
+        }
         try {
-            await c.from("expenses").upsert(toRowExpense(e, uid));
-        } catch (err) { console.warn("[Supabase Sync] push expense failed", err.message); }
+            const { error } = await c.from("expenses").upsert(toRowExpense(e, uid));
+            if (error) console.error("[Supabase Sync] push expense error", error);
+            else console.info("[Supabase Sync] push expense ok", e.id);
+        } catch (err) { console.error("[Supabase Sync] push expense failed", err.message, err); }
     }
 
     async function pushIncome(i) {
         const c = getClient();
-        const uid = await getUserId();
-        if (!c || !uid || !isOnline()) return;
+        let uid = await getUserId();
+        if (!uid) uid = await getUserId(true);
+        if (!c || !uid || !isOnline()) {
+            console.warn("[Supabase Sync] push income skipped — no uid");
+            return;
+        }
         try {
-            await c.from("incomes").upsert(toRowIncome(i, uid));
-        } catch (err) { console.warn("[Supabase Sync] push income failed", err.message); }
+            const { error } = await c.from("incomes").upsert(toRowIncome(i, uid));
+            if (error) console.error("[Supabase Sync] push income error", error);
+            else console.info("[Supabase Sync] push income ok", i.id);
+        } catch (err) { console.error("[Supabase Sync] push income failed", err.message, err); }
     }
 
     async function pushBudget(month, amount) {
         const c = getClient();
-        const uid = await getUserId();
-        if (!c || !uid || !isOnline()) return;
+        let uid = await getUserId();
+        if (!uid) uid = await getUserId(true);
+        if (!c || !uid || !isOnline()) {
+            console.warn("[Supabase Sync] push budget skipped — no uid");
+            return;
+        }
         try {
-            if (amount <= 0) await c.from("budgets").delete().eq("user_id", uid).eq("month", month);
-            else await c.from("budgets").upsert({ user_id: uid, month: month, amount: amount });
-        } catch (e) {}
+            let res;
+            if (amount <= 0) res = await c.from("budgets").delete().eq("user_id", uid).eq("month", month);
+            else res = await c.from("budgets").upsert({ user_id: uid, month: month, amount: amount });
+            if (res.error) console.error("[Supabase Sync] push budget error", res.error);
+            else console.info("[Supabase Sync] push budget ok", month, amount);
+        } catch (e) { console.error("[Supabase Sync] push budget failed", e.message, e); }
     }
 
     async function pushWallet(method, amount) {
         const c = getClient();
-        const uid = await getUserId();
-        if (!c || !uid || !isOnline()) return;
+        let uid = await getUserId();
+        if (!uid) uid = await getUserId(true);
+        if (!c || !uid || !isOnline()) {
+            console.warn("[Supabase Sync] push wallet skipped — no uid", { method: method, amount: amount, uid: uid });
+            return;
+        }
         try {
-            if (!amount && amount !== 0) await c.from("wallets").delete().eq("user_id", uid).eq("method", method);
-            else await c.from("wallets").upsert({ user_id: uid, method: method, amount: amount });
-        } catch (e) {}
+            let res;
+            if (!amount && amount !== 0) {
+                res = await c.from("wallets").delete().eq("user_id", uid).eq("method", method);
+            } else {
+                res = await c.from("wallets").upsert({ user_id: uid, method: method, amount: amount }, { onConflict: "user_id,method" });
+            }
+            if (res.error) console.error("[Supabase Sync] push wallet error", res.error, { method: method, amount: amount });
+            else console.info("[Supabase Sync] push wallet ok", method, amount);
+        } catch (e) { console.error("[Supabase Sync] push wallet failed", e.message, e); }
     }
 
     function wrapLocalWithSync() {

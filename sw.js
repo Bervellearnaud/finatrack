@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.6.0";   /* v1.6.0 : onglet Portefeuilles dédié + message bienvenue personnalisé Bonjour/Bon après-midi/Bonsoir */
+const VERSION = "finatrack-v1.6.1";   /* v1.6.1 : fix sync wallets/budgets/incomes + logs + RLS */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
