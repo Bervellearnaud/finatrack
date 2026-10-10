@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.0.1";   /* v3.0.1 : fix rien ne s'enregistre - singleton supabase client + savings RLS + logs */
+const VERSION = "finatrack-v3.0.2";   /* v3.0.2 : fix 400 uuid - savings id TEXT + singleton + logs detailles */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

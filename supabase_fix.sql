@@ -2,13 +2,18 @@
 -- A exécuter dans Supabase Dashboard > SQL Editor > New Query > Run
 
 -- 1. Activer RLS sur toutes les tables
-alter table expenses enable row level security;
-alter table incomes enable row level security;
-alter table budgets enable row level security;
-alter table wallets enable row level security;
-alter table savings enable row level security;
-alter table settings enable row level security;
-alter table profiles enable row level security;
+-- Si savings n'existe pas encore, on l'ignore (sera créé par supabase_savings.sql)
+do $$ begin
+  alter table expenses enable row level security;
+  alter table incomes enable row level security;
+  alter table budgets enable row level security;
+  alter table wallets enable row level security;
+  alter table settings enable row level security;
+  alter table profiles enable row level security;
+  if exists (select 1 from information_schema.tables where table_name='savings') then
+    alter table savings enable row level security;
+  end if;
+end $$;
 
 -- 2. Supprimer anciennes policies
 drop policy if exists "Users can manage own expenses" on expenses;

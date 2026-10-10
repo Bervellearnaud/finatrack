@@ -230,8 +230,10 @@
             return;
         }
         try {
-            const { error } = await c.from("expenses").upsert(toRowExpense(e, uid));
-            if (error) console.error("[Supabase Sync] push expense error", error);
+            const row = toRowExpense(e, uid);
+            row.id = String(row.id);
+            const { error } = await c.from("expenses").upsert(row, { onConflict: "id" });
+            if (error) console.error("[Supabase Sync] push expense error", { message: error.message, code: error.code, details: error.details, hint: error.hint });
             else console.info("[Supabase Sync] push expense ok", e.id);
         } catch (err) { console.error("[Supabase Sync] push expense failed", err.message, err); }
     }
@@ -245,8 +247,10 @@
             return;
         }
         try {
-            const { error } = await c.from("incomes").upsert(toRowIncome(i, uid));
-            if (error) console.error("[Supabase Sync] push income error", error);
+            const row = toRowIncome(i, uid);
+            row.id = String(row.id);
+            const { error } = await c.from("incomes").upsert(row, { onConflict: "id" });
+            if (error) console.error("[Supabase Sync] push income error", { message: error.message, code: error.code, details: error.details, hint: error.hint });
             else console.info("[Supabase Sync] push income ok", i.id);
         } catch (err) { console.error("[Supabase Sync] push income failed", err.message, err); }
     }
@@ -333,26 +337,38 @@
         let uid = await getUserId();
         if (!uid) uid = await getUserId(true);
         if (!c || !uid || !isOnline()) {
-            console.warn("[Supabase Sync] push saving skipped — no uid");
+            console.warn("[Supabase Sync] push saving skipped — no uid", { uid: uid, online: isOnline(), saving: s });
             return;
         }
         try {
             const row = {
-                id: s.id,
+                id: String(s.id),
                 user_id: uid,
-                amount: s.amount,
-                goal: s.goal,
-                description: s.description,
-                target_amount: s.targetAmount || null,
-                current_amount: s.currentAmount || s.amount,
-                date: s.date,
+                amount: Number(s.amount) || 0,
+                goal: String(s.goal || "Épargne"),
+                description: s.description || null,
+                target_amount: s.targetAmount ? Number(s.targetAmount) : null,
+                current_amount: s.currentAmount ? Number(s.currentAmount) : Number(s.amount) || 0,
+                date: s.date || new Date().toISOString().slice(0,10),
                 payment_method: s.paymentMethod || "Espèces",
-                created_at: s.createdAt,
-                updated_at: s.updatedAt
+                created_at: s.createdAt || new Date().toISOString(),
+                updated_at: new Date().toISOString()
             };
-            const { error } = await c.from("savings").upsert(row);
-            if (error) console.error("[Supabase Sync] push saving error", error);
-            else console.info("[Supabase Sync] push saving ok", s.id, s.goal);
+            console.info("[Supabase Sync] push saving try", row);
+            const { data, error } = await c.from("savings").upsert(row, { onConflict: "id" }).select();
+            if (error) {
+                console.error("[Supabase Sync] push saving error", {
+                    message: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint,
+                    row: row
+                });
+                // Affiche aussi l'objet brut pour debug
+                console.error(error);
+            } else {
+                console.info("[Supabase Sync] push saving ok", s.id, s.goal, data);
+            }
         } catch (e) { console.error("[Supabase Sync] push saving failed", e.message, e); }
     }
 
@@ -488,7 +504,7 @@
             U.bus.emit("auth:changed", { action: event, userId: userId });
         });
 
-        console.info("[Supabase Sync] hybride activé (local = source, cloud = miroir)");
+        console.info("[Supabase Sync] activé — mode offline-first Abidjan (local instantané + cloud en miroir)");
         return true;
     }
 
