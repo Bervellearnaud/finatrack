@@ -100,12 +100,8 @@
             provider: "supabase"
         };
         saveSession(sess);
-        // Crée aussi en local pour compatibilité
-        const users = getUsers();
-        if (!users.some(function (u) { return u.email === email; })) {
-            users.push({ id: user.id, email: email, name: sess.name, passwordHash: hashPassword(password), createdAt: sess.createdAt });
-            saveUsers(users);
-        }
+        // Ne plus enregistrer en local quand Supabase est configuré — 100% cloud
+        // (on garde juste la session, pas finatrack_users)
         if (U && U.bus) U.bus.emit("auth:changed", { action: "register", user: sess });
         // Crée profil
         try { await supa.from("profiles").upsert({ id: user.id, email: email, name: sess.name }); } catch (e) {}
@@ -127,11 +123,7 @@
             provider: "supabase"
         };
         saveSession(sess);
-        const users = getUsers();
-        if (!users.some(function (u) { return u.email === email; })) {
-            users.push({ id: user.id, email: email, name: sess.name, passwordHash: hashPassword(password), createdAt: sess.createdAt });
-            saveUsers(users);
-        }
+        // Pas de stockage local des users quand Supabase est là
         if (U && U.bus) U.bus.emit("auth:changed", { action: "login", user: sess });
         if (global.FT.supabaseSync) await global.FT.supabaseSync.pull();
         return sess;
@@ -209,7 +201,7 @@
             const keysToRemove = [];
             for (let i = 0; i < global.localStorage.length; i++) {
                 const k = global.localStorage.key(i);
-                if (k && (k.indexOf("sb-") === 0 || k.indexOf("supabase") !== -1)) keysToRemove.push(k);
+                if (k && (k.indexOf("sb-") === 0 || k.indexOf("supabase") !== -1 || k.indexOf("finatrack_") === 0)) keysToRemove.push(k);
             }
             keysToRemove.forEach(function (k) { try { global.localStorage.removeItem(k); } catch (e) {} });
         } catch (e) {}

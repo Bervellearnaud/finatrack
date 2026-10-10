@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.6.2";   /* v1.6.2 : fix Auth session missing -> force Supabase login, pas de fallback local en ligne */
+const VERSION = "finatrack-v1.7.0";   /* v1.7.0 : retire enregistrement local des users, 100% Supabase, logout efface tout finatrack_ */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
