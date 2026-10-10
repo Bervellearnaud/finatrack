@@ -60,7 +60,9 @@
 
     function areaLabel() {
         const settings = data.getSettings();
-        return (settings.area || U.LOCAL_CONTEXT.defaultArea).trim() || U.LOCAL_CONTEXT.city;
+        const area = (settings.area || "").trim();
+        // Zone non fixe : si l'utilisateur a renseigné une zone, on l'affiche, sinon ville seulement
+        return area || U.LOCAL_CONTEXT.city;
     }
     function greeting() {
         let h = new Date().getHours();

@@ -830,8 +830,8 @@
 
         const areaInput = U.el("input", {
             class: "input", type: "text", id: "settingArea", maxlength: "60",
-            placeholder: "Ex. Cocody — Angré",
-            value: settings.area || U.LOCAL_CONTEXT.defaultArea
+            placeholder: "Ex. Yopougon, Marcory, Bouaké...",
+            value: settings.area || ""
         });
 
         /* --- Auth obligatoire --- */
@@ -907,11 +907,12 @@
                     class: "btn btn-primary", type: "button", text: "Enregistrer les préférences",
                     on: {
                         click: function () {
+                            // Zone non fixe : l'utilisateur peut laisser vide ou mettre ce qu'il veut, pas de fallback forcé
                             data.saveSettings({
                                 userName: U.sanitizeText(nameInput.value, 40),
                                 currency: currencySelect.value,
                                 voiceLanguage: voiceSelect.value,
-                                area: U.sanitizeText(areaInput.value, 60) || U.LOCAL_CONTEXT.defaultArea
+                                area: U.sanitizeText(areaInput.value, 60)
                             });
                             U.toast("Préférences enregistrées", "success");
                             markActiveNav();
@@ -1357,12 +1358,18 @@
                     if (!hero) return;
                     // Crée une bannière au-dessus du hero si pas déjà présente
                     if (document.getElementById("welcomeBanner")) return;
+                    // Zone non fixe — prend la zone de l'utilisateur depuis settings, pas Cocody en dur
+                    let areaLabel = "Abidjan";
+                    try {
+                        const s = data.getSettings();
+                        areaLabel = (s.area || U.LOCAL_CONTEXT.defaultArea || "Abidjan").trim();
+                    } catch(e){}
                     const banner = U.el("div", { id:"welcomeBanner", class:"welcome-banner", role:"status", style:{ marginBottom:"16px", padding:"14px 18px", borderRadius:"14px", background:"linear-gradient(135deg,#123C32 0%,#1E5A4A 100%)", color:"#F6F2E8", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px", boxShadow:"0 6px 18px rgba(18,60,50,.22)", border:"1px solid rgba(231,184,75,.25)" }}, [
                         U.el("div", { style:{ display:"flex", alignItems:"center", gap:"12px" }}, [
                             U.el("span", { style:{ fontSize:"28px" }, text: emoji }),
                             U.el("div", {}, [
                                 U.el("div", { style:{ fontWeight:"800", fontSize:"1.05rem", letterSpacing:"-.01em" }, text: greet + " " + firstName + " !"}),
-                                U.el("div", { style:{ opacity:".85", fontSize:".88rem", marginTop:"2px" }, text: "Content de vous revoir — Cocody Angré, Abidjan · " + new Date().toLocaleDateString("fr-FR",{ weekday:"long", day:"numeric", month:"long"})})
+                                U.el("div", { style:{ opacity:".85", fontSize:".88rem", marginTop:"2px" }, text: "Content de vous revoir — " + areaLabel + " · " + new Date().toLocaleDateString("fr-FR",{ weekday:"long", day:"numeric", month:"long"})})
                             ])
                         ]),
                         U.el("button", { class:"btn btn-ghost btn-sm", type:"button", text:"✕", attrs:{ "aria-label":"Fermer" }, style:{ color:"#F6F2E8", borderColor:"rgba(255,255,255,.2)" }, on:{ click:function(){ banner.remove(); } } })

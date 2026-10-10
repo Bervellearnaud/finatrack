@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.9.0";   /* v1.9.0 : retire fenetre bienvenue demo + confidentialite, garde seulement Bonjour+prenom, import/export + vider cache */
+const VERSION = "finatrack-v1.9.1";   /* v1.9.1 : zone non fixe - plus de fallback Cocody force, area libre + banniere bienvenue dynamique */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
