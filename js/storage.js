@@ -19,6 +19,7 @@
         BUDGET: "finatrack_budget",
         WALLETS: "finatrack_wallets",
         SETTINGS: "finatrack_settings",
+        SAVINGS: "finatrack_savings",
         META: "finatrack_meta",
         VERSION: 1
     };
@@ -314,6 +315,17 @@
             return wallets[method] || 0;
         },
 
+        /* ---------- EPARGNE ---------- */
+        getSavings: function () {
+            const list = read(KEYS.SAVINGS, []);
+            return Array.isArray(list) ? list : [];
+        },
+        saveSavings: function (list) {
+            const clean = Array.isArray(list) ? list : [];
+            write(KEYS.SAVINGS, clean);
+            return clean;
+        },
+
         /* ---------- PARAMÈTRES ---------- */
         getSettings: function () {
             const stored = read(KEYS.SETTINGS, {});
@@ -336,6 +348,7 @@
             remove(KEYS.BUDGET);
             remove(KEYS.WALLETS);
             remove(KEYS.SETTINGS);
+            remove(KEYS.SAVINGS);
             remove(KEYS.META);
             return true;
         },
@@ -347,6 +360,7 @@
                 incomes: localAdapter.getIncomes(),
                 budgets: localAdapter.getBudgets(),
                 wallets: localAdapter.getWallets(),
+                savings: localAdapter.getSavings(),
                 settings: localAdapter.getSettings()
             };
         },
@@ -433,6 +447,9 @@
         saveWallets: function (wallets) { return adapter.saveWallets(wallets); },
         getWallet: function (method) { return adapter.getWallet ? adapter.getWallet(method) : 0; },
         setWallet: function (method, amount) { return adapter.setWallet(method, amount); },
+
+        getSavings: function () { return adapter.getSavings ? adapter.getSavings() : []; },
+        saveSavings: function (list) { return adapter.saveSavings ? adapter.saveSavings(list) : []; },
 
         getSettings: function () { return adapter.getSettings(); },
         saveSettings: function (patch) { return adapter.saveSettings(patch); },

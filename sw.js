@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v2.1.1";   /* v2.1.1 : transactions mobile - retire bloc Aucune transaction pour le moment, garde Ajouter une transaction */
+const VERSION = "finatrack-v2.2.0";   /* v2.2.0 : section epargne liee DB savings + page dediee + dashboard + sync */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
@@ -23,6 +23,7 @@ const PRECACHE = [
     "./pages/wallets.html",
     "./pages/transactions.html",
     "./pages/incomes.html",
+    "./pages/savings.html",
     "./pages/budget.html",
     "./pages/analysis.html",
     "./pages/settings.html",
@@ -40,6 +41,7 @@ const PRECACHE = [
     "./js/incomes.js",
     "./js/transactions.js",
     "./js/payments.js",
+    "./js/savings.js",
     "./js/budget.js",
     "./js/dashboard.js",
     "./js/analysis.js",

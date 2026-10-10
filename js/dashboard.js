@@ -29,6 +29,8 @@
         const byCategory = EXP.getExpensesByCategory(monthExpenses);
         const savings = TX.calculateSavings(month);
         const savingsRate = TX.calculateSavingsRate(month);
+        const savingsList = data.getSavings ? data.getSavings() : [];
+        const totalEpargne = savingsList.reduce(function (t, s) { return t + U.toNumber(s.amount); }, 0);
         return {
             month: month,
             monthLabel: U.monthLabel(month),
@@ -42,6 +44,8 @@
             expenseDelta: prevExpense > 0 ? (monthExpense - prevExpense) / prevExpense : null,
             savings: savings,
             savingsRate: savingsRate,
+            totalEpargne: totalEpargne,
+            savingsList: savingsList,
             budget: budgetState,
             byCategory: byCategory,
             topCategory: byCategory[0] || null,
@@ -218,6 +222,21 @@
                 }
             }),
             budgetCard,
+            kpiCard({
+                cls: "kpi-savings",
+                emoji: "🐖",
+                label: "Épargne totale",
+                value: U.formatCurrency(d.totalEpargne || 0),
+                sub: (d.savingsList ? d.savingsList.length : 0) + " dépôt" + ((d.savingsList && d.savingsList.length>1)?"s":"") + " · voir épargne →",
+                clickTitle: "Voir l'épargne",
+                onClick: function () {
+                    if (global.FT.router && global.FT.router.navigate) {
+                        global.FT.router.navigate("savings");
+                    } else {
+                        global.location.href = "pages/savings.html";
+                    }
+                }
+            }),
             kpiCard({
                 cls: "kpi-expense",
                 emoji: "💸",

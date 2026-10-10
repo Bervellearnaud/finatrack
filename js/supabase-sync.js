@@ -178,6 +178,33 @@
                     console.info("[Supabase Sync] pull settings");
                 }
             } catch (e) { console.warn("[Supabase Sync] pull settings failed", e.message); }
+            // Savings
+            try {
+                const { data: savRemote } = await c.from("savings").select("*").eq("user_id", uid);
+                if (savRemote && savRemote.length) {
+                    const localSav = local.getSavings ? local.getSavings() : [];
+                    const localIds = new Set(localSav.map(function (s) { return s.id; }));
+                    const toAdd = savRemote.filter(function (r) { return !localIds.has(r.id); }).map(function (r) {
+                        return {
+                            id: r.id,
+                            amount: Number(r.amount),
+                            goal: r.goal,
+                            description: r.description,
+                            targetAmount: r.target_amount ? Number(r.target_amount) : null,
+                            currentAmount: r.current_amount ? Number(r.current_amount) : Number(r.amount),
+                            date: r.date,
+                            paymentMethod: r.payment_method,
+                            createdAt: r.created_at,
+                            updatedAt: r.updated_at
+                        };
+                    });
+                    if (toAdd.length) {
+                        const merged = localSav.concat(toAdd);
+                        try { global.localStorage.setItem("finatrack_savings", JSON.stringify(merged)); } catch (e) {}
+                        console.info("[Supabase Sync] pull savings +" + toAdd.length);
+                    }
+                }
+            } catch (e) { console.warn("[Supabase Sync] pull savings failed", e.message); }
             // Profiles (just log, not critical for app)
             try {
                 const { data: profRemote } = await c.from("profiles").select("*").eq("id", uid).maybeSingle();
@@ -297,6 +324,34 @@
         } catch (e) { console.error("[Supabase Sync] push settings failed", e.message, e); }
     }
 
+    async function pushSaving(s) {
+        const c = getClient();
+        let uid = await getUserId();
+        if (!uid) uid = await getUserId(true);
+        if (!c || !uid || !isOnline()) {
+            console.warn("[Supabase Sync] push saving skipped — no uid");
+            return;
+        }
+        try {
+            const row = {
+                id: s.id,
+                user_id: uid,
+                amount: s.amount,
+                goal: s.goal,
+                description: s.description,
+                target_amount: s.targetAmount || null,
+                current_amount: s.currentAmount || s.amount,
+                date: s.date,
+                payment_method: s.paymentMethod || "Espèces",
+                created_at: s.createdAt,
+                updated_at: s.updatedAt
+            };
+            const { error } = await c.from("savings").upsert(row);
+            if (error) console.error("[Supabase Sync] push saving error", error);
+            else console.info("[Supabase Sync] push saving ok", s.id, s.goal);
+        } catch (e) { console.error("[Supabase Sync] push saving failed", e.message, e); }
+    }
+
     function wrapLocalWithSync() {
         const data = global.FT.data;
         if (!data || data.__supabaseWrapped) return;
@@ -372,6 +427,22 @@
                 try {
                     const full = data.getSettings();
                     pushSettings(full);
+                } catch (e) {}
+                return v;
+            };
+        }
+
+        // Savings — wrap saveSavings pour push chaque épargne
+        const origSaveSavings = data.saveSavings ? data.saveSavings.bind(data) : null;
+        if (origSaveSavings) {
+            data.saveSavings = function (list) {
+                const v = origSaveSavings(list);
+                try {
+                    // Push le dernier ajouté/modifié (ou tous si petite liste)
+                    if (Array.isArray(list) && list.length) {
+                        const last = list[list.length - 1];
+                        if (last) pushSaving(last);
+                    }
                 } catch (e) {}
                 return v;
             };

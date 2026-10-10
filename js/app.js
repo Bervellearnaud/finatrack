@@ -793,6 +793,125 @@
         return entry;
     }
 
+    function openSavingsForm(record) {
+        const isEdit = !!(record && record.id);
+        const defaults = {
+            amount: "",
+            goal: "Tontine",
+            description: "",
+            targetAmount: "",
+            date: U.todayISO(),
+            paymentMethod: "Espèces"
+        };
+        const initial = isEdit ? record : defaults;
+
+        const amountInput = U.el("input", {
+            class: "input", type: "text", inputmode: "decimal", id: "savingsAmount",
+            value: initial.amount ? U.formatNumber(initial.amount) : "",
+            placeholder: "Ex. 20 000", "data-autofocus": ""
+        });
+        const goalSelect = U.el("select", { class: "select", id: "savingsGoal" }, [
+            "Tontine", "Projet maison", "Scolarité", "Urgence", "Investissement", "Voyage", "Autre"
+        ].map(function (g) {
+            return U.el("option", { value: g, text: g, selected: (initial.goal || "Tontine") === g });
+        }));
+        const targetInput = U.el("input", {
+            class: "input", type: "text", inputmode: "decimal", id: "savingsTarget",
+            value: initial.targetAmount ? U.formatNumber(initial.targetAmount) : "",
+            placeholder: "Ex. 500 000 (optionnel)"
+        });
+        const descInput = U.el("input", {
+            class: "input", type: "text", id: "savingsDesc",
+            value: initial.description || "",
+            placeholder: "Ex. Tontine mensuelle - Adjamé"
+        });
+        const dateInput = U.el("input", {
+            class: "input", type: "date", id: "savingsDate",
+            value: initial.date || U.todayISO()
+        });
+        const paySelect = U.el("select", { class: "select", id: "savingsPay" },
+            U.PAYMENT_METHODS.map(function (m) {
+                return U.el("option", { value: m, text: U.paymentEmoji(m) + " " + m, selected: (initial.paymentMethod || "Espèces") === m });
+            })
+        );
+
+        let entry = null;
+        const form = U.el("form", { class: "modal-body stack", novalidate: true }, [
+            U.el("div", { class: "form-grid" }, [
+                U.el("div", { class: "field" }, [
+                    U.el("label", { for: "savingsAmount", text: "Montant déposé" }),
+                    U.el("div", { class: "amount-field" }, [
+                        amountInput,
+                        U.el("span", { class: "suffix", text: U.currencySymbol() })
+                    ]),
+                    U.el("div", { class: "error-msg", id: "savingsAmountErr" })
+                ]),
+                U.el("div", { class: "field" }, [
+                    U.el("label", { for: "savingsGoal", text: "Objectif" }),
+                    goalSelect
+                ]),
+                U.el("div", { class: "field" }, [
+                    U.el("label", { for: "savingsTarget", text: "Objectif cible (optionnel)" }),
+                    targetInput,
+                    U.el("div", { class: "help", text: "Ex: 500 000F pour projet maison" })
+                ]),
+                U.el("div", { class: "field" }, [
+                    U.el("label", { for: "savingsDate", text: "Date" }),
+                    dateInput
+                ]),
+                U.el("div", { class: "field" }, [
+                    U.el("label", { for: "savingsPay", text: "Moyen de paiement" }),
+                    paySelect
+                ]),
+                U.el("div", { class: "field", style: { gridColumn: "1 / -1" } }, [
+                    U.el("label", { for: "savingsDesc", text: "Description (optionnel)" }),
+                    descInput
+                ])
+            ]),
+            U.el("div", { class: "modal-foot" }, [
+                U.el("button", { class: "btn btn-ghost", type: "button", text: "Annuler", on: { click: function () { if (entry) entry.close(); } } }),
+                U.el("button", { class: "btn btn-primary", type: "submit", text: isEdit ? "Mettre à jour" : "Enregistrer l'épargne" })
+            ])
+        ]);
+
+        const panel = U.el("div", { class: "modal-panel", attrs: { "aria-labelledby": "savingsTitle" } }, [
+            U.el("div", { class: "modal-grip" }),
+            U.el("div", { class: "modal-head" }, [
+                U.el("div", {}, [
+                    U.el("h2", { id: "savingsTitle", text: isEdit ? "Modifier l'épargne" : "🐖 Nouvelle épargne" }),
+                    U.el("p", { class: "muted", text: "Chaque dépôt alimente ton objectif. Lié à la table savings en base." })
+                ]),
+                U.el("button", { class: "icon-btn", type: "button", text: "✕", on: { click: function () { if (entry) entry.close(); } } })
+            ]),
+            form
+        ]);
+
+        entry = U.openModal(panel);
+
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const payload = {
+                amount: amountInput.value,
+                goal: goalSelect.value,
+                targetAmount: targetInput.value,
+                description: descInput.value,
+                date: dateInput.value,
+                paymentMethod: paySelect.value
+            };
+            const result = isEdit ? global.FT.savings.updateSaving(record.id, payload) : global.FT.savings.addSaving(payload);
+            if (!result.ok) {
+                const errBox = U.qs("#savingsAmountErr", form);
+                if (errBox) errBox.textContent = result.errors.amount || result.errors.goal || "Vérifiez le formulaire";
+                U.toast("Vérifiez le formulaire", "error", Object.values(result.errors)[0]);
+                return;
+            }
+            entry.close();
+            U.toast(isEdit ? "Épargne modifiée" : "Épargne enregistrée", "success", U.formatCurrency(result.data.amount) + " · " + result.data.goal);
+        });
+
+        return entry;
+    }
+
     /** Invitation au premier lancement — retirée sur demande : on garde juste Bonjour + prénom */
     function maybeOfferDemo() {
         // Plus de fenêtre de bienvenue avec données d'exemple — le salut personnalisé suffit
@@ -1232,6 +1351,8 @@
         const actions = {
             "add-expense": function () { openExpenseForm(); },
             "add-income": function () { openIncomeForm(); },
+            "add-saving": function () { openSavingsForm(); },
+            "open-savings-form": function () { openSavingsForm(); },
             "voice-add": function () { global.FT.voice.open(); },
             "quick-add": function () { openQuickAdd(); },
             "open-add-menu": function () { openAddMenu(); },
@@ -1438,6 +1559,7 @@
     global.FT.app = {
         openExpenseForm: openExpenseForm,
         openIncomeForm: openIncomeForm,
+        openSavingsForm: openSavingsForm,
         openQuickAdd: openQuickAdd,
         openWalletsForm: openWalletsForm,
         openAddMenu: openAddMenu,

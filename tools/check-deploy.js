@@ -53,7 +53,7 @@ function walk(dir) {
 }
 
 const PAGES = ["index.html", "pages/wallets.html", "pages/transactions.html", "pages/incomes.html",
-    "pages/budget.html", "pages/analysis.html", "pages/settings.html", "pages/login.html"];
+    "pages/savings.html", "pages/budget.html", "pages/analysis.html", "pages/settings.html", "pages/login.html"];
 
 console.log("\nFinaTrack CI — vérifications de déploiement");
 console.log("─".repeat(58));

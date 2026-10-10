@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123C32">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FinaTrack">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="finatrack-sw" content="../sw.js">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/icon-32.png">
+<meta name="description" content="Épargne FinaTrack CI : objectifs, tontine, projets, suivi de l'épargne par objectif.">
+<title>Épargne · FinaTrack CI</title>
+<script>
+// Guard auth immédiat
+(function(){
+  try {
+    if (location.pathname.indexOf("login.html") === -1) {
+      var sess = localStorage.getItem("finatrack_session");
+      if (!sess) {
+        var isPages = location.pathname.indexOf("/pages/") !== -1;
+        location.replace(isPages ? "login.html" : "pages/login.html");
+      }
+    }
+  } catch(e){}
+})();
+</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23123C32'/%3E%3Cpath d='M18 44V20h28v6H26v5h16v6H26v7z' fill='%23E7B84B'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Aller au contenu principal</a>
+
+<div class="app-shell">
+    <aside class="sidebar" aria-label="Navigation principale">
+        <span class="kente" aria-hidden="true"></span>
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true">F</span>
+            <span>
+                <span class="brand-name">FINATRACK CI</span>
+                <span class="brand-tag">Comprenez où va votre argent.</span>
+            </span>
+        </div>
+        <nav class="nav" aria-label="Sections">
+            <a class="nav-item" href="../index.html" data-nav="dashboard"><span class="nav-ico" aria-hidden="true">🏠</span><span>Dashboard</span></a>
+            <a class="nav-item" href="wallets.html" data-nav="wallets"><span class="nav-ico" aria-hidden="true">💳</span><span>Porte&shy;feuilles</span></a>
+            <a class="nav-item" href="transactions.html" data-nav="transactions"><span class="nav-ico" aria-hidden="true">💸</span><span>Trans&shy;actions</span></a>
+            <a class="nav-item" href="incomes.html" data-nav="incomes"><span class="nav-ico" aria-hidden="true">💰</span><span>Revenus</span></a>
+            <a class="nav-item" href="savings.html" data-nav="savings"><span class="nav-ico" aria-hidden="true">🐖</span><span>Épargne</span></a>
+            <a class="nav-item" href="budget.html" data-nav="budget"><span class="nav-ico" aria-hidden="true">🎯</span><span>Budget</span></a>
+            <a class="nav-item" href="analysis.html" data-nav="analysis"><span class="nav-ico" aria-hidden="true">📊</span><span>Analyses</span></a>
+            <a class="nav-item" href="settings.html" data-nav="settings"><span class="nav-ico" aria-hidden="true">⚙️</span><span>Para&shy;mètres</span></a>
+        </nav>
+        <div class="nav-sep" aria-hidden="true"></div>
+        <button class="btn btn-accent btn-block" type="button" data-action="voice-add">🎙️ Ajouter par la voix</button>
+        <button class="btn btn-ghost btn-block" type="button" data-action="open-savings-form" style="color:var(--sidebar-text);border-color:rgba(255,255,255,.16)">+ Nouvelle épargne</button>
+        <div class="sidebar-foot">
+            <strong style="color:#F6F2E8">🐖 Épargne</strong><br>
+            Tontine, projet maison, scolarité : tout ici.
+        </div>
+    </aside>
+
+    <div class="main-wrap">
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">F</span>
+                <span class="topbar-title" id="topbarTitle">Épargne</span>
+            </div>
+            <div class="topbar-actions">
+                <a class="icon-btn" href="analysis.html" aria-label="Analyses" title="Analyses">📊</a>
+                <button class="icon-btn" type="button" data-action="voice-add" aria-label="Ajouter par la voix" title="Voix">🎙️</button>
+                <a class="icon-btn" href="../index.html" aria-label="Retour à l'accueil" title="Accueil">🏠</a>
+            </div>
+        </header>
+
+        <main class="page" id="main" data-page="savings">
+            <div class="page-head">
+                <h1>🐖 Mon épargne</h1>
+                <p class="page-sub">Objectifs par enveloppe : tontine, projet, scolarité, urgence. Chaque dépôt alimente ton objectif.</p>
+            </div>
+
+            <section class="section" aria-labelledby="savingsTotalTitle">
+                <div class="card card-lg">
+                    <div class="card-head">
+                        <h3 id="savingsTotalTitle">💰 Total épargné</h3>
+                        <span class="tag" id="savingsCount">0 objectif</span>
+                    </div>
+                    <div id="savingsTotal"></div>
+                </div>
+            </section>
+
+            <section class="section" aria-labelledby="savingsGoalsTitle">
+                <div class="card-head">
+                    <h2 id="savingsGoalsTitle">🎯 Mes objectifs</h2>
+                    <button class="btn btn-primary btn-sm" type="button" data-action="open-savings-form">+ Nouvelle épargne</button>
+                </div>
+                <div id="savingsGoals"></div>
+            </section>
+
+            <section class="section" aria-labelledby="savingsListTitle">
+                <div class="card card-lg">
+                    <div class="card-head">
+                        <h3 id="savingsListTitle">📜 Historique des dépôts</h3>
+                        <span class="hint" id="savingsListCount">0 dépôt</span>
+                    </div>
+                    <div id="savingsList"></div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="card card-lg card-cta">
+                    <div>
+                        <h3>Ajouter une épargne</h3>
+                        <p class="muted" style="font-size:.88rem;margin-top:4px">Tontine du mois, projet maison, épargne urgence.</p>
+                    </div>
+                    <div class="btn-row card-cta-actions">
+                        <button class="btn btn-primary" type="button" data-action="open-savings-form">🐖 Nouvelle épargne</button>
+                        <a class="btn btn-ghost" href="transactions.html">Voir transactions</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<button class="btn btn-accent fab-desktop" type="button" data-action="open-savings-form" aria-label="Ajouter une épargne">+ Épargne</button>
+
+<nav class="bottom-nav" aria-label="Navigation principale">
+    <a class="bn-item" href="../index.html" data-nav="dashboard"><span class="bn-ico" aria-hidden="true">🏠</span><span>Accueil</span></a>
+    <a class="bn-item" href="wallets.html" data-nav="wallets"><span class="bn-ico" aria-hidden="true">💳</span><span>Porte&shy;feuilles</span></a>
+    <div class="bn-add"><button class="fab-btn" type="button" data-action="open-add-menu" aria-label="Ajouter"><span aria-hidden="true">+</span></button></div>
+    <a class="bn-item" href="transactions.html" data-nav="transactions"><span class="bn-ico" aria-hidden="true">💸</span><span>Trans&shy;actions</span></a>
+    <a class="bn-item" href="settings.html" data-nav="settings"><span class="bn-ico" aria-hidden="true">⚙️</span><span>Para&shy;mètres</span></a>
+</nav>
+
+<script src="../js/vendor/chart.umd.min.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/vendor/supabase.min.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/supabase-sync.js"></script>
+<script src="../js/supabase-adapter.js"></script>
+<script src="../js/expenses.js"></script>
+<script src="../js/incomes.js"></script>
+<script src="../js/transactions.js"></script>
+<script src="../js/payments.js"></script>
+<script src="../js/savings.js"></script>
+<script src="../js/budget.js"></script>
+<script src="../js/dashboard.js"></script>
+<script src="../js/analysis.js"></script>
+<script src="../js/charts.js"></script>
+<script src="../js/voiceExpense.js"></script>
+<script src="../js/location.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/mobile.js"></script>
+<script>
+// Init page épargne
+(function(){
+  function initSavingsPage(){
+    const totalHost = document.getElementById('savingsTotal');
+    const goalsHost = document.getElementById('savingsGoals');
+    const listHost = document.getElementById('savingsList');
+    const countTag = document.getElementById('savingsCount');
+    const listCount = document.getElementById('savingsListCount');
+    if (!totalHost || !goalsHost || !listHost) return;
+    const U = window.FT.utils;
+    const S = window.FT.savings;
+    const data = window.FT.data;
+
+    function render(){
+      const all = data.getSavings();
+      const total = S.getTotalSavings();
+      const byGoal = S.getSavingsByGoal();
+
+      U.clear(totalHost);
+      totalHost.appendChild(U.el("div", { class:"wallet-total" }, [
+        U.el("div", { class:"wallet-total-main" }, [
+          U.el("span", { class:"wallet-total-label", text:"Total épargné" }),
+          U.el("span", { class:"wallet-total-value", text: U.formatCurrency(total) })
+        ]),
+        U.el("div", { class:"wallet-total-detail" }, [
+          U.el("span", { text: byGoal.length + " objectif" + (byGoal.length>1?"s":"") }),
+          U.el("span", { text: all.length + " dépôt" + (all.length>1?"s":"") })
+        ])
+      ]));
+
+      if (countTag) countTag.textContent = byGoal.length + " objectif" + (byGoal.length>1?"s":"");
+      if (listCount) listCount.textContent = all.length + " dépôt" + (all.length>1?"s":"");
+
+      // Objectifs
+      U.clear(goalsHost);
+      if (!byGoal.length){
+        goalsHost.appendChild(U.el("div", { class:"empty", style:{padding:"18px"} }, [
+          U.el("div", { class:"empty-ico", text:"🐖" }),
+          U.el("p", { text:"Aucun objectif d'épargne pour le moment." }),
+          U.el("button", { class:"btn btn-primary btn-sm", text:"+ Nouvelle épargne", on:{ click:function(){ FT.app.openSavingsForm(); } } })
+        ]));
+      } else {
+        const grid = U.el("div", { class:"wallet-grid" });
+        byGoal.forEach(function(g){
+          const progress = g.target > 0 ? Math.min(100, Math.round((g.total / g.target) * 100)) : 0;
+          const tile = U.el("div", { class:"wallet-tile" + (progress>=100?" is-positive":""), style:{ "--pay-color":"#2E7D5B" } }, [
+            U.el("div", { class:"wallet-head" }, [
+              U.el("span", { class:"pay-dot", style:{ background:"#2E7D5B" } }),
+              U.el("span", { class:"wallet-name", text:"🐖 " + g.goal })
+            ]),
+            U.el("div", { class:"wallet-value", text: U.formatCurrency(g.total) }),
+            U.el("div", { class:"wallet-meta" }, [
+              U.el("span", { text: g.count + " dépôt" + (g.count>1?"s":"") }),
+              g.target ? U.el("span", { text:"/ " + U.formatCurrency(g.target) + " (" + progress + "%)" }) : null
+            ].filter(Boolean)),
+            g.target ? U.el("div", { class:"wallet-bar" }, [
+              U.el("span", { class:"wallet-bar-in", style:{ width: progress + "%", background:"#2E7D5B" } })
+            ]) : null
+          ]);
+          grid.appendChild(tile);
+        });
+        goalsHost.appendChild(grid);
+      }
+
+      // Historique
+      U.clear(listHost);
+      if (!all.length){
+        listHost.appendChild(U.el("div", { class:"empty", style:{padding:"18px"} }, [
+          U.el("p", { text:"Aucun dépôt d'épargne." })
+        ]));
+      } else {
+        const sorted = all.slice().sort(function(a,b){ return b.date < a.date ? -1 : 1; });
+        const list = U.el("div", { class:"tx-list" });
+        sorted.slice(0,50).forEach(function(s){
+          const row = U.el("div", { class:"tx" }, [
+            U.el("div", { class:"tx-ico", text:"🐖", style:{ background:"#E8F5E9", color:"#2E7D5B" } }),
+            U.el("div", { class:"tx-main" }, [
+              U.el("div", { class:"tx-title", text: s.goal + " · " + U.formatCurrency(s.amount) }),
+              U.el("div", { class:"tx-meta", text: (s.description || "") + " · " + U.formatDate(s.date) + " · " + s.paymentMethod })
+            ]),
+            U.el("div", { class:"tx-amount pos", text: "+" + U.formatCurrency(s.amount) })
+          ]);
+          list.appendChild(row);
+        });
+        listHost.appendChild(list);
+      }
+    }
+
+    render();
+    U.bus.on("data:changed", function(e){ if (!e || e.type==="savings" || e.type==="all") render(); });
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initSavingsPage);
+  else initSavingsPage();
+})();
+</script>
+</body>
+</html>

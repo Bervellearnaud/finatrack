@@ -50,6 +50,7 @@ const REQUIRED = [
     "pages/wallets.html",
     "pages/transactions.html",
     "pages/incomes.html",
+    "pages/savings.html",
     "pages/budget.html",
     "pages/analysis.html",
     "pages/settings.html",
