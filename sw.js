@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.8.3";   /* v1.8.3 : fix settings ne s'enregistre pas - colonnes manquantes + RLS + logs */
+const VERSION = "finatrack-v1.9.0";   /* v1.9.0 : retire fenetre bienvenue demo + confidentialite, garde seulement Bonjour+prenom, import/export + vider cache */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

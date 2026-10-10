@@ -793,48 +793,10 @@
         return entry;
     }
 
-    /** Invitation au premier lancement (§42). */
+    /** Invitation au premier lancement — retirée sur demande : on garde juste Bonjour + prénom */
     function maybeOfferDemo() {
-        const settings = data.getSettings();
-        const isEmpty = data.getExpenses().length === 0 && data.getIncomes().length === 0;
-        if (!isEmpty || settings.demoLoaded) return;
-
-        const titleId = "welcomeTitle";
-        const panel = U.el("div", { class: "modal-panel modal-narrow", attrs: { "aria-labelledby": titleId } }, [
-            U.el("div", { class: "modal-grip", attrs: { "aria-hidden": "true" } }),
-            U.el("div", { class: "hero", style: { marginBottom: "0", padding: "var(--sp-5)" } }, [
-                U.el("div", { class: "hero-motif", attrs: { "aria-hidden": "true" } }),
-                U.el("div", { class: "hero-inner" }, [
-                    U.el("h2", { id: titleId, text: "Bienvenue sur FinaTrack CI 👋" }),
-                    U.el("p", { text: "Comprenez où va votre argent à Abidjan — wôrô-wôrô, garba, facture CIE, tontine : tout se note en quelques secondes, même à la voix." })
-                ])
-            ]),
-            U.el("div", { class: "stack", style: { marginTop: "16px", gap: "12px" } }, [
-                U.el("div", { class: "alert info" }, [
-                    U.el("span", { class: "alert-ico", text: "🔒", attrs: { "aria-hidden": "true" } }),
-                    U.el("div", {}, [
-                        U.el("div", { class: "alert-title", text: "Vos données restent sur votre appareil" }),
-                        U.el("div", { class: "muted", text: "Tout est enregistré localement dans votre navigateur. Rien n'est envoyé sur un serveur." })
-                    ])
-                ]),
-                U.el("p", { class: "muted", style: { fontSize: "0.88rem" }, text: "Souhaitez-vous commencer avec des données d'exemple pour découvrir l'application ?" })
-            ]),
-            U.el("div", { class: "modal-foot" }, [
-                U.el("button", { class: "btn btn-ghost", type: "button", text: "Commencer à zéro", on: {
-                    click: function () { data.saveSettings({ demoLoaded: true }); modal.close(); U.toast("Bon départ !", "success", "Ajoutez votre première dépense quand vous voulez."); }
-                } }),
-                U.el("button", { class: "btn btn-accent", type: "button", text: "Voir avec des exemples", "data-autofocus": "", on: {
-                    click: function () {
-                        const counts = loadDemoData();
-                        modal.close();
-                        U.toast("Mode démo activé", "success", counts.expenses + " dépenses et " + counts.incomes + " revenus d'exemple");
-                    }
-                } })
-            ])
-        ]);
-
-        const modal = U.openModal(panel, { labelledBy: titleId, center: true });
-        return modal;
+        // Plus de fenêtre de bienvenue avec données d'exemple — le salut personnalisé suffit
+        return null;
     }
 
     /* ======================================================================
@@ -1094,34 +1056,6 @@
                         }
                     }
                 }),
-                hasDemoData()
-                    ? U.el("button", {
-                        class: "btn btn-ghost btn-sm", type: "button", text: "🗑️ Supprimer les données de démonstration",
-                        on: {
-                            click: function () {
-                                U.confirmDialog({
-                                    title: "Supprimer les données de démonstration ?",
-                                    message: "Seules les transactions d'exemple seront retirées. Vos propres données sont conservées.",
-                                    confirmLabel: "Supprimer les exemples"
-                                }).then(function (ok) {
-                                    if (!ok) return;
-                                    const removed = removeDemoData();
-                                    U.toast("Données de démonstration supprimées", "success", removed + " transaction(s) retirée(s)");
-                                    renderSettingsPage();
-                                });
-                            }
-                        }
-                    })
-                    : U.el("button", {
-                        class: "btn btn-ghost btn-sm", type: "button", text: "🧪 Charger les données de démonstration",
-                        on: {
-                            click: function () {
-                                const counts = loadDemoData();
-                                U.toast("Données de démonstration chargées", "success", counts.expenses + " dépenses, " + counts.incomes + " revenus");
-                                renderSettingsPage();
-                            }
-                        }
-                    }),
                 U.el("button", {
                     class: "btn btn-danger-soft btn-sm", type: "button", text: "⚠️ Effacer toutes les données",
                     on: {
@@ -1172,17 +1106,7 @@
             U.el("p", { class: "muted", style: { fontSize: "var(--fs-sm)", marginTop: "14px" }, text: "Les catégories et moyens de paiement sont adaptés au contexte ivoirien (mobile money, gbaka, maquis, CIE, SODECI…)." })
         ]);
 
-        /* --- Confidentialité (§49) — roadmap retirée sur demande --- */
-        const privacyCard = U.el("div", { class: "card card-lg" }, [
-            U.el("div", { class: "card-head" }, [U.el("h3", {}, [U.el("span", { text: "🔒" }), U.el("span", { text: "Confidentialité" })])]),
-            U.el("div", { class: "alert info" }, [
-                U.el("span", { class: "alert-ico", text: "📱", attrs: { "aria-hidden": "true" } }),
-                U.el("div", {}, [
-                    U.el("div", { class: "alert-title", text: "Vos données sont enregistrées localement dans votre navigateur." }),
-                    U.el("div", { class: "muted", text: "Elles ne sont pas synchronisées avec un serveur : personne d'autre que vous n'y a accès, et elles disparaissent si vous effacez les données du navigateur." })
-                ])
-            ])
-        ]);
+        /* Confidentialité retirée sur demande — plus de carte */
 
         /* --- À propos — ne garder que la version --- */
         const aboutCard = U.el("div", { class: "card card-lg" }, [
@@ -1200,7 +1124,7 @@
 
         const grid = U.el("div", { class: "grid grid-2 uneven" }, [
             U.el("div", { class: "stack" }, [authCard, mobileCard, readingCard, profileCard, appearanceCard, categoriesCard].filter(Boolean)),
-            U.el("div", { class: "stack" }, [dataCard, privacyCard, aboutCard])
+            U.el("div", { class: "stack" }, [dataCard, aboutCard])
         ]);
         host.appendChild(grid);
 
