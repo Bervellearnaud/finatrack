@@ -221,6 +221,13 @@
         if (!uid) uid = await getUserId(true);
         if (!c || !uid || !isOnline()) {
             console.warn("[Supabase Sync] push wallet skipped — no uid", { method: method, amount: amount, uid: uid });
+            if (!uid) {
+                try {
+                    if (global.FT && FT.utils && FT.utils.toast) {
+                        FT.utils.toast("Session Supabase manquante", "warn", "Déconnectez-vous puis reconnectez-vous pour synchroniser les portefeuilles.");
+                    }
+                } catch(e){}
+            }
             return;
         }
         try {
@@ -311,7 +318,19 @@
         }
         enabled = true;
         // Récupère session
-        await getUserId();
+        let uid = await getUserId(true);
+        if (!uid) {
+            // Si on a une session locale mais pas de session Supabase, on force reconnexion
+            try {
+                const localSess = global.localStorage.getItem("finatrack_session");
+                if (localSess) {
+                    console.warn("[Supabase Sync] Session locale présente mais pas de session Supabase — reconnexion requise");
+                    // On ne supprime pas tout de suite, on laisse l'utilisateur se reconnecter
+                    // Mais on nettoie le cache userId pour retenter au prochain login
+                    userId = null;
+                }
+            } catch(e){}
+        }
         // Pull initial
         await pull();
         // Wrap les méthodes locales

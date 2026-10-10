@@ -177,15 +177,23 @@
         const norm = normalizeEmail(email);
         const supa = getSupa();
         if (supa) {
+            // Quand Supabase est configuré, on exige une session Supabase
+            // Le fallback local n'est autorisé que si on est hors ligne
             try {
                 return await loginSupabase(norm, password);
             } catch (e) {
-                // Si Supabase échoue mais on a un compte local (offline), fallback
-                if (e.message && e.message.toLowerCase().indexOf("invalid login") !== -1) {
+                const msg = (e.message || "").toLowerCase();
+                const offline = typeof navigator !== "undefined" && !navigator.onLine;
+                if (offline) {
                     const users = getUsers();
                     if (users.some(function (u) { return u.email === norm; })) {
+                        console.warn("[Auth] Offline fallback local pour", norm);
                         return loginLocal(norm, password);
                     }
+                }
+                // Pas de fallback silencieux en ligne : on remonte l'erreur Supabase
+                if (msg.indexOf("invalid login") !== -1 || msg.indexOf("invalid") !== -1) {
+                    throw new Error("E-mail ou mot de passe incorrect (Supabase).");
                 }
                 throw e;
             }
