@@ -59,9 +59,15 @@
     }
 
     function areaLabel() {
+        // Système de localisation automatique : utilise FT.location si dispo, sinon settings.area, sinon ville
+        try {
+            if (global.FT.location) {
+                const label = FT.location.getLabel();
+                if (label) return label;
+            }
+        } catch (e) {}
         const settings = data.getSettings();
         const area = (settings.area || "").trim();
-        // Zone non fixe : si l'utilisateur a renseigné une zone, on l'affiche, sinon ville seulement
         return area || U.LOCAL_CONTEXT.city;
     }
     function greeting() {

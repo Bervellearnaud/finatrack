@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v1.9.3";   /* v1.9.3 : fix zone Cocody qui revient - retire default DB settings/profiles + area null + dashboard city */
+const VERSION = "finatrack-v2.0.0";   /* v2.0.0 : systeme de localisation auto GPS, plus besoin saisie manuelle zone */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
@@ -45,6 +45,7 @@ const PRECACHE = [
     "./js/analysis.js",
     "./js/charts.js",
     "./js/voiceExpense.js",
+    "./js/location.js",
     "./js/mobile.js",
     "./js/app.js",
     "./js/vendor/chart.umd.min.js",

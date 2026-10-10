@@ -828,11 +828,49 @@
             U.el("option", { value: "en-US", text: "English (US)", selected: settings.voiceLanguage === "en-US" })
         ]);
 
-        const areaInput = U.el("input", {
-            class: "input", type: "text", id: "settingArea", maxlength: "60",
-            placeholder: "Ex. Yopougon, Marcory, Bouaké...",
-            value: settings.area || ""
-        });
+        // --- Localisation automatique (remplace saisie manuelle zone) ---
+        const currentLoc = (global.FT.location && FT.location.read()) || null;
+        const locLabel = currentLoc ? currentLoc.label : (settings.area || "Non détectée");
+        const locDetail = currentLoc ? (currentLoc.display || "") : "";
+        const locationCard = U.el("div", { class: "field" }, [
+            U.el("label", { text: "📍 Ma position (auto)" }),
+            U.el("div", { class: "card", style: { padding: "12px", background: "var(--surface)" } }, [
+                U.el("div", { style: { fontWeight: "700", fontSize: "1rem" }, text: locLabel }),
+                locDetail ? U.el("div", { class: "muted", style: { fontSize: ".82rem", marginTop: "4px" }, text: locDetail }) : null,
+                currentLoc && currentLoc.timestamp ? U.el("div", { class: "muted", style: { fontSize: ".75rem", marginTop: "4px" }, text: "Mise à jour : " + new Date(currentLoc.timestamp).toLocaleString("fr-FR") }) : null,
+                U.el("div", { class: "btn-row", style: { marginTop: "10px" } }, [
+                    U.el("button", {
+                        class: "btn btn-primary btn-sm", type: "button", text: "📍 Détecter ma position",
+                        on: {
+                            click: async function () {
+                                try {
+                                    const btn = this;
+                                    btn.disabled = true;
+                                    btn.textContent = "Détection...";
+                                    const loc = await FT.location.detect();
+                                    U.toast("Position mise à jour", "success", loc.label);
+                                    renderSettingsPage();
+                                } catch (e) {
+                                    U.toast("Erreur localisation", "error", e.message);
+                                }
+                            }
+                        }
+                    }),
+                    U.el("button", {
+                        class: "btn btn-ghost btn-sm", type: "button", text: "Effacer",
+                        on: {
+                            click: function () {
+                                try { localStorage.removeItem("finatrack_location"); } catch (e) {}
+                                data.saveSettings({ area: "" });
+                                U.toast("Position effacée", "info", "Retour à Abidjan par défaut");
+                                renderSettingsPage();
+                            }
+                        }
+                    })
+                ])
+            ]),
+            U.el("div", { class: "help", text: "Utilise le GPS de ton téléphone si tu autorises. Aucune saisie manuelle nécessaire." })
+        ]);
 
         /* --- Auth obligatoire --- */
         const currentUser = global.FT.auth ? global.FT.auth.getCurrentUser() : null;
@@ -896,23 +934,18 @@
                     voiceSelect,
                     U.el("div", { class: "help", text: "La reconnaissance vocale fonctionne mieux avec la langue réellement parlée." })
                 ]),
-                U.el("div", { class: "field" }, [
-                    U.el("label", { for: "settingArea", text: "Ma zone (ville, commune, quartier)" }),
-                    areaInput,
-                    U.el("div", { class: "help", text: "Affichée sur l'accueil et dans les conseils. Ex. Abidjan — Cocody, Angré." })
-                ])
+                locationCard
             ]),
             U.el("div", { class: "btn-row", style: { marginTop: "16px" } }, [
                 U.el("button", {
                     class: "btn btn-primary", type: "button", text: "Enregistrer les préférences",
                     on: {
                         click: function () {
-                            // Zone non fixe : l'utilisateur peut laisser vide ou mettre ce qu'il veut, pas de fallback forcé
+                            // Zone gérée automatiquement par le système de localisation
                             data.saveSettings({
                                 userName: U.sanitizeText(nameInput.value, 40),
                                 currency: currencySelect.value,
-                                voiceLanguage: voiceSelect.value,
-                                area: U.sanitizeText(areaInput.value, 60)
+                                voiceLanguage: voiceSelect.value
                             });
                             U.toast("Préférences enregistrées", "success");
                             markActiveNav();
