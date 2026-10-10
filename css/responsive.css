@@ -549,8 +549,8 @@
         max-height: 72vh;
     }
 
-    /* Transactions mobile : retire premier bloc (totaux par moyen de paiement), garde deuxième (Résultats) */
-    #txPaymentSummary {
+    /* Transactions mobile : dans le bloc Résultats, retire le premier bloc "Aucune transaction pour le moment", garde le deuxième "Ajouter une transaction" */
+    #txList .empty {
         display: none !important;
     }
 }

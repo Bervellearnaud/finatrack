@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v2.1.0";   /* v2.1.0 : budget mois futurs + transactions mobile retire bloc 1 + bottom nav settings + topbar analyse */
+const VERSION = "finatrack-v2.1.1";   /* v2.1.1 : transactions mobile - retire bloc Aucune transaction pour le moment, garde Ajouter une transaction */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
