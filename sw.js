@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.0.2";   /* v3.0.2 : fix 400 uuid - savings id TEXT + singleton + logs detailles */
+const VERSION = "finatrack-v3.1.0";   /* v3.1.0 : refonte theme sombre - contraste fort, distinction claire/clair */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

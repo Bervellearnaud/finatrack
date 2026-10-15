@@ -108,38 +108,51 @@
     color-scheme: light;
 }
 
-/* Thème sombre — prévu dès la conception (§43), activable dans Paramètres */
+/* Thème sombre — refonte v3.1 : contraste fort, distinction immédiate */
 [data-theme="dark"] {
-    --primary: #2E7D62;
-    --primary-light: #3E9B7C;
-    --secondary: #E29A48;
-    --accent: #EFC45C;
-    --earth: #C46046;
-    --background: #0F1513;
-    --surface: #16201D;
-    --surface-2: #1B2724;
-    --surface-3: #22302C;
-    --text: #ECF2EF;
-    --text-muted: #9AA8A2;
-    --border: #2B3A35;
+    /* Couleurs vives qui claquent sur fond sombre */
+    --primary: #2ECC8A;
+    --primary-light: #4DE8A5;
+    --secondary: #FF9F43;
+    --accent: #FFD93D;
+    --earth: #FF6B6B;
+    --success: #2ECC8A;
+    --danger: #FF5A5F;
 
-    --primary-soft: #1E2F2A;
-    --secondary-soft: #33261A;
-    --accent-soft: #332C16;
-    --earth-soft: #33211C;
-    --success-soft: #17301F;
-    --danger-soft: #33201C;
-    --info-soft: #1D2A30;
+    /* Fonds : 3 niveaux bien distincts du clair */
+    --background: #080E0C;      /* quasi noir vert - très différent de #F5EFE3 clair */
+    --surface: #121E1B;         /* cartes - sombre mais lisible */
+    --surface-2: #1A2E27;       /* secondaire - + clair que surface */
+    --surface-3: #223D33;       /* hover / tracks */
 
-    --sidebar-bg: #0C120F;
-    --sidebar-bg-2: #090E0C;
-    --sidebar-text: #E6EEE9;
-    --sidebar-muted: #8CA79B;
+    --text: #E8F5EF;            /* blanc cassé vert très clair */
+    --text-muted: #A8C0B6;      /* gris-vert clair, plus lisible */
+    --text-soft: #8FA99E;
+    --border: #1E352E;          /* bordure visible mais subtile */
 
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px -6px rgba(0, 0, 0, 0.6);
-    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4), 0 12px 28px -14px rgba(0, 0, 0, 0.7);
-    --shadow-lg: 0 18px 48px -20px rgba(0, 0, 0, 0.8);
+    --primary-soft: #0F2A22;
+    --secondary-soft: #2E2112;
+    --accent-soft: #2E2710;
+    --earth-soft: #2E1A18;
+    --success-soft: #0F2A22;
+    --danger-soft: #2E1A18;
+    --info-soft: #152A32;
+
+    --sidebar-bg: #060A09;      /* sidebar encore plus sombre que background */
+    --sidebar-bg-2: #0A1411;
+    --sidebar-text: #D4E8DF;
+    --sidebar-muted: #7A9B8E;
+
+    --success-ink: #4DE8A5;
+    --danger-ink: #FF8A80;
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.6);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5), 0 4px 16px -4px rgba(0, 0, 0, 0.7);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6), 0 12px 32px -12px rgba(0, 0, 0, 0.8);
+    --shadow-lg: 0 20px 60px -20px rgba(0, 0, 0, 0.9);
+
+    --ring: 0 0 0 3px rgba(46, 204, 138, 0.25);
+    --ring-primary: 0 0 0 3px rgba(46, 204, 138, 0.3);
 
     color-scheme: dark;
 }
@@ -344,6 +357,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
     backdrop-filter: saturate(140%) blur(10px);
     border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
+[data-theme="dark"] .topbar {
+    background: rgba(8, 14, 12, 0.88);
+    border-bottom-color: #1A2E27;
+}
 .topbar .brand-mark { width: 34px; height: 34px; border-radius: 10px; font-size: 0.85rem; }
 .topbar-title { font-weight: 700; letter-spacing: -0.02em; }
 .topbar-actions { display: flex; align-items: center; gap: var(--sp-2); }
@@ -371,7 +388,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .bottom-nav .bn-item:hover { text-decoration: none; color: var(--text); }
 .bottom-nav .bn-ico { font-size: 1.15rem; line-height: 1; filter: saturate(0.9); }
 .bottom-nav .bn-item[aria-current="page"] { color: var(--primary); }
-[data-theme="dark"] .bottom-nav .bn-item[aria-current="page"] { color: var(--accent); }
+[data-theme="dark"] .bottom-nav .bn-item[aria-current="page"] { color: var(--primary-light); }
 .bottom-nav .bn-item[aria-current="page"] .bn-ico { transform: translateY(-1px); }
 
 .bn-add {
