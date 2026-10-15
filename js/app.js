@@ -496,6 +496,8 @@
     /** Menu d'ajout du bouton « + » central. */
     function openAddMenu() {
         const titleId = "addMenuTitle";
+        const isPages = location.pathname.indexOf("/pages/") !== -1;
+        const settingsHref = isPages ? "settings.html" : "pages/settings.html";
         const actions = [
             {
                 ico: "⚡", title: "Dépense rapide", desc: "Montant + catégorie, en 5 secondes", cls: "",
@@ -516,6 +518,10 @@
             {
                 ico: "🐖", title: "Épargne", desc: "Tontine, projet maison, urgence", cls: "",
                 run: function () { modal.close(); openSavingsForm(); }
+            },
+            {
+                ico: "⚙️", title: "Paramètres", desc: "Thème, devise, position, compte", cls: "",
+                run: function () { modal.close(); location.href = settingsHref; }
             }
         ];
 
