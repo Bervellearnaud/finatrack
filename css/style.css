@@ -618,13 +618,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tx-actions { display: flex; gap: 4px; justify-content: flex-end; margin-top: 6px; }
 
 /* Bandeau de groupe (par date ou par moyen de paiement) : fond OPAQUE, sinon
-   les lignes qui défilent dessous restent visibles et brouillent la lecture. */
+   les lignes qui défilent dessous restent visibles et brouillent la lecture.
+   Fix mobile v3.1.1 : plus de sticky qui bloque le scroll — le bandeau défile normalement. */
 .tx-group-label {
     padding: 8px var(--sp-4); font-size: var(--fs-xs); font-weight: 800; letter-spacing: 0.07em;
     text-transform: uppercase; color: var(--text-soft);
     background: var(--surface-2);
     border-bottom: 1px solid var(--border);
-    position: sticky; top: 56px; z-index: 5;
+    position: static;
 }
 
 /* --------------------------------------------------------------------------

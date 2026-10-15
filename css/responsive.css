@@ -124,7 +124,13 @@
     .table-detail .ta { text-align: right; font-weight: 750; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .table-detail .tc { text-align: center; width: 1%; white-space: nowrap; }
     .tx-list.is-table { display: none; }
-    .tx-group-label { position: static; }
+    /* tx-group-label reste static partout (fix v3.1.1 bug date qui se fixe au scroll) */
+    /* Fix v3.1.1 : sur mobile, la liste ne doit pas avoir de scroll interne qui casse le sticky et cache le contenu */
+    #txList, #walletsTxList, #incomeList, #budgetHistory {
+        max-height: none;
+        overflow-y: visible;
+        overscroll-behavior: auto;
+    }
 
     .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px var(--sp-5); }
 }

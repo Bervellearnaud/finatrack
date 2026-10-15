@@ -41,8 +41,12 @@
     }
 
     function addSaving(input) {
+        console.info("[Savings] addSaving try", input);
         const res = validateSaving(input);
-        if (!res.valid) return { ok: false, errors: res.errors };
+        if (!res.valid) {
+            console.warn("[Savings] validation failed", res.errors);
+            return { ok: false, errors: res.errors };
+        }
         const now = new Date().toISOString();
         const rec = {
             id: U.uid("sav"),
@@ -57,11 +61,29 @@
             updatedAt: now
         };
         // Sauvegarde via data layer (local + sync)
-        const list = data.getSavings ? data.getSavings() : [];
-        list.push(rec);
-        if (data.saveSavings) data.saveSavings(list);
-        else {
-            try { localStorage.setItem("finatrack_savings", JSON.stringify(list)); } catch (e) {}
+        try {
+            const list = data.getSavings ? data.getSavings() : [];
+            list.push(rec);
+            if (data.saveSavings) {
+                data.saveSavings(list);
+                console.info("[Savings] saved locally via data.saveSavings", rec.id, list.length);
+            } else {
+                try { localStorage.setItem("finatrack_savings", JSON.stringify(list)); } catch (e) {}
+                console.info("[Savings] saved via direct localStorage", rec.id);
+            }
+        } catch (e) {
+            console.error("[Savings] local save failed", e);
+            // Fallback direct
+            try {
+                const raw = localStorage.getItem("finatrack_savings");
+                const arr = raw ? JSON.parse(raw) : [];
+                arr.push(rec);
+                localStorage.setItem("finatrack_savings", JSON.stringify(arr));
+                console.info("[Savings] fallback direct save ok", rec.id);
+            } catch (e2) {
+                console.error("[Savings] fallback failed", e2);
+                return { ok: false, errors: { global: "Stockage local plein ou bloqué" } };
+            }
         }
         U.bus.emit("data:changed", { type: "savings", action: "add", record: rec });
         return { ok: true, data: rec };

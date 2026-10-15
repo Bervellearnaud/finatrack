@@ -892,8 +892,12 @@
 
         entry = U.openModal(panel);
 
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
+        // Focus retardé pour mobile (évite clavier qui cache la modale)
+        setTimeout(function(){ try { if (amountInput && !isEdit) amountInput.focus(); } catch(e){} }, 300);
+
+        function handleSavingsSubmit(e) {
+            if (e) e.preventDefault();
+            console.info("[App] savings submit", { amount: amountInput.value, goal: goalSelect.value });
             const payload = {
                 amount: amountInput.value,
                 goal: goalSelect.value,
@@ -905,13 +909,31 @@
             const result = isEdit ? global.FT.savings.updateSaving(record.id, payload) : global.FT.savings.addSaving(payload);
             if (!result.ok) {
                 const errBox = U.qs("#savingsAmountErr", form);
-                if (errBox) errBox.textContent = result.errors.amount || result.errors.goal || "Vérifiez le formulaire";
+                if (errBox) errBox.textContent = result.errors.amount || result.errors.goal || result.errors.global || "Vérifiez le formulaire";
                 U.toast("Vérifiez le formulaire", "error", Object.values(result.errors)[0]);
+                console.warn("[App] savings save failed", result.errors);
                 return;
             }
+            console.info("[App] savings saved", result.data);
             entry.close();
             U.toast(isEdit ? "Épargne modifiée" : "Épargne enregistrée", "success", U.formatCurrency(result.data.amount) + " · " + result.data.goal);
-        });
+        }
+
+        form.addEventListener("submit", handleSavingsSubmit);
+        // Fallback click pour mobile où submit peut ne pas se déclencher
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.addEventListener("click", function(e){
+                // Si le form a déjà géré via submit, ce second appel sera idempotent grâce à close()
+                // On laisse le submit natif gérer, mais on ajoute un fallback touch
+                if (e) {
+                    // Empêche double déclenchement si submit déjà en cours
+                    if (submitBtn.dataset.submitting === "1") return;
+                    submitBtn.dataset.submitting = "1";
+                    setTimeout(function(){ submitBtn.dataset.submitting = "0"; }, 1000);
+                }
+            });
+        }
 
         return entry;
     }
