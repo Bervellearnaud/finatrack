@@ -20,10 +20,10 @@
         country: "Côte d'Ivoire",
         countryCode: "CI",
         city: "Abidjan",
-        commune: "Cocody",
-        area: "Angré",
-        /** Libellé par défaut proposé dans les Paramètres */
-        defaultArea: "Cocody — Angré",
+        commune: "",
+        area: "",
+        /** Libellé par défaut — plus de Cocody en dur, vide jusqu'à activation position */
+        defaultArea: "",
         locale: "fr-CI",
         /** Opérateurs mobile money réellement actifs en Côte d'Ivoire */
         mobileMoney: ["Orange Money", "MTN Mobile Money", "Moov Money", "Wave", "Djamo"],

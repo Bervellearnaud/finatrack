@@ -2023,10 +2023,10 @@ group("17. Ancrage local (Abidjan — Cocody, Angré)");
     /* ---- 16a. Contexte local et repères ---- */
     const local = U.LOCAL_CONTEXT;
     check("Contexte local défini (abidjan)", local && local.city === "Abidjan" &&
-        local.area === "Angré" && local.country === "Côte d'Ivoire", JSON.stringify(local && {
+        local.country === "Côte d'Ivoire", JSON.stringify(local && {
         city: local.city, area: local.area, country: local.country
     }));
-    equal("Zone par défaut proposée", local.defaultArea, "Cocody — Angré");
+    equal("Zone par défaut proposée (plus de Cocody en dur)", local.defaultArea, "");
 
     const missingHints = U.CATEGORIES.filter(function (c) { return !U.categoryHint(c); });
     check("Chaque catégorie a un repère local", missingHints.length === 0, missingHints.join(", "));
@@ -2129,7 +2129,7 @@ group("17. Ancrage local (Abidjan — Cocody, Angré)");
 
     /* ---- 16h. Interface : zone, repères et accueil contextualisé ---- */
     const greeting = d.querySelector("#dashHero").textContent;
-    check("Accueil contextualisé (Cocody — Angré)", /Cocody — Angré/.test(greeting), greeting.slice(0, 120).replace(/\s+/g, " "));
+    check("Accueil sans Cocody en dur (nom user uniquement)", !/Cocody — Angré/.test(greeting), greeting.slice(0, 120).replace(/\s+/g, " "));
     w.close();
 
     const settings = loadPage("pages/settings.html");

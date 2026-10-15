@@ -348,7 +348,7 @@
                     theme: data.theme || "light",
                     textSize: data.text_size || "normal",
                     voiceLanguage: data.voice_language || "fr-FR",
-                    area: data.area || "Cocody — Angré",
+                    area: data.area || "",
                     version: 1
                 };
             }, function () { return localAdapter.getSettings(); });

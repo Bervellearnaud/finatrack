@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.3.0";   /* v3.3.0 : remplace Cocody-Angre par nom user, position affichee uniquement si showLocation active */
+const VERSION = "finatrack-v3.3.1";   /* v3.3.1 : retire tout Cocody-Angre en dur, defaultArea vide */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
