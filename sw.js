@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.2.1";   /* v3.2.1 : bottom-nav mobile remplace Parametres par Epargne, Parametres reste en haut */
+const VERSION = "finatrack-v3.2.2";   /* v3.2.2 : fix mobile epargne bouton Enregistrer ne reagit pas - type button + click + touchend */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

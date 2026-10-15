@@ -874,7 +874,7 @@
             ]),
             U.el("div", { class: "modal-foot" }, [
                 U.el("button", { class: "btn btn-ghost", type: "button", text: "Annuler", on: { click: function () { if (entry) entry.close(); } } }),
-                U.el("button", { class: "btn btn-primary", type: "submit", text: isEdit ? "Mettre à jour" : "Enregistrer l'épargne" })
+                U.el("button", { class: "btn btn-primary", type: "button", id: "savingsSubmitBtn", text: isEdit ? "Mettre à jour" : "Enregistrer l'épargne" })
             ])
         ]);
 
@@ -896,43 +896,51 @@
         setTimeout(function(){ try { if (amountInput && !isEdit) amountInput.focus(); } catch(e){} }, 300);
 
         function handleSavingsSubmit(e) {
-            if (e) e.preventDefault();
-            console.info("[App] savings submit", { amount: amountInput.value, goal: goalSelect.value });
-            const payload = {
-                amount: amountInput.value,
-                goal: goalSelect.value,
-                targetAmount: targetInput.value,
-                description: descInput.value,
-                date: dateInput.value,
-                paymentMethod: paySelect.value
-            };
-            const result = isEdit ? global.FT.savings.updateSaving(record.id, payload) : global.FT.savings.addSaving(payload);
-            if (!result.ok) {
-                const errBox = U.qs("#savingsAmountErr", form);
-                if (errBox) errBox.textContent = result.errors.amount || result.errors.goal || result.errors.global || "Vérifiez le formulaire";
-                U.toast("Vérifiez le formulaire", "error", Object.values(result.errors)[0]);
-                console.warn("[App] savings save failed", result.errors);
-                return;
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            try {
+                console.info("[App] savings submit", { amount: amountInput.value, goal: goalSelect.value, date: dateInput.value });
+                const payload = {
+                    amount: amountInput.value,
+                    goal: goalSelect.value,
+                    targetAmount: targetInput.value,
+                    description: descInput.value,
+                    date: dateInput.value,
+                    paymentMethod: paySelect.value
+                };
+                // Validation visuelle rapide
+                if (!payload.amount || String(payload.amount).trim() === "") {
+                    const errBox = U.qs("#savingsAmountErr", form);
+                    if (errBox) errBox.textContent = "Indiquez le montant.";
+                    U.toast("Montant requis", "error", "Tapez le montant déposé");
+                    return;
+                }
+                const result = isEdit ? global.FT.savings.updateSaving(record.id, payload) : global.FT.savings.addSaving(payload);
+                if (!result.ok) {
+                    const errBox = U.qs("#savingsAmountErr", form);
+                    if (errBox) errBox.textContent = result.errors.amount || result.errors.goal || result.errors.global || "Vérifiez le formulaire";
+                    U.toast("Vérifiez le formulaire", "error", Object.values(result.errors)[0] || "Erreur");
+                    console.warn("[App] savings save failed", result.errors);
+                    return;
+                }
+                console.info("[App] savings saved", result.data);
+                entry.close();
+                U.toast(isEdit ? "Épargne modifiée" : "Épargne enregistrée", "success", U.formatCurrency(result.data.amount) + " · " + result.data.goal);
+            } catch (err) {
+                console.error("[App] savings exception", err);
+                U.toast("Erreur", "error", err.message || String(err));
             }
-            console.info("[App] savings saved", result.data);
-            entry.close();
-            U.toast(isEdit ? "Épargne modifiée" : "Épargne enregistrée", "success", U.formatCurrency(result.data.amount) + " · " + result.data.goal);
         }
 
         form.addEventListener("submit", handleSavingsSubmit);
-        // Fallback click pour mobile où submit peut ne pas se déclencher
-        const submitBtn = form.querySelector('button[type="submit"]');
+        // Bouton principal : click direct (critique pour mobile)
+        const submitBtn = U.qs("#savingsSubmitBtn", form) || form.querySelector('button[type="button"].btn-primary');
         if (submitBtn) {
-            submitBtn.addEventListener("click", function(e){
-                // Si le form a déjà géré via submit, ce second appel sera idempotent grâce à close()
-                // On laisse le submit natif gérer, mais on ajoute un fallback touch
-                if (e) {
-                    // Empêche double déclenchement si submit déjà en cours
-                    if (submitBtn.dataset.submitting === "1") return;
-                    submitBtn.dataset.submitting = "1";
-                    setTimeout(function(){ submitBtn.dataset.submitting = "0"; }, 1000);
-                }
-            });
+            submitBtn.addEventListener("click", handleSavingsSubmit);
+            // Support tactile
+            submitBtn.addEventListener("touchend", function(e){
+                e.preventDefault();
+                handleSavingsSubmit(e);
+            }, { passive: false });
         }
 
         return entry;
