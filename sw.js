@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.1.1";   /* v3.1.1 : fix mobile epargne + fix date sticky qui se fixe au scroll */
+const VERSION = "finatrack-v3.2.0";   /* v3.2.0 : theme finance pro - look banque Wave/Djamo, chiffres tabulaires, cartes blanches, grille subtile */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

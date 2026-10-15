@@ -1008,7 +1008,17 @@
     border: 1px solid rgba(46, 204, 138, 0.2);
 }
 
-/* Cartes */
+/* Cartes — light finance pro */
+.card, .kpi-card, .top3-card, .flow-step, .stat-card {
+    background: #FFFFFF;
+    border: 1px solid #E8EDEA;
+    box-shadow: var(--shadow-card);
+}
+.card:hover {
+    border-color: #D5DDDA;
+}
+
+/* Cartes sombres */
 [data-theme="dark"] .card,
 [data-theme="dark"] .kpi-card,
 [data-theme="dark"] .top3-card,
