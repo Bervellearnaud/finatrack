@@ -982,47 +982,75 @@
         ]);
 
         // --- Localisation automatique (remplace saisie manuelle zone) ---
+        const showLocationToggle = U.el("input", {
+            type: "checkbox", id: "settingShowLocation", checked: settings.showLocation === true,
+            attrs: { role: "switch" }
+        });
+        showLocationToggle.addEventListener("change", function(){
+            data.saveSettings({ showLocation: showLocationToggle.checked });
+            if (showLocationToggle.checked) {
+                U.toast("Position activée", "success", "Ta position s'affichera sur le tableau de bord");
+            } else {
+                U.toast("Position désactivée", "info", "Ta position ne s'affiche plus");
+            }
+            renderSettingsPage();
+            try { if (global.FT.dashboard) FT.dashboard.render(); } catch(e){}
+        });
+
         const currentLoc = (global.FT.location && FT.location.read()) || null;
         const locLabel = currentLoc ? currentLoc.label : (settings.area || "Non détectée");
         const locDetail = currentLoc ? (currentLoc.display || "") : "";
-        const locationCard = U.el("div", { class: "field" }, [
-            U.el("label", { text: "📍 Ma position (auto)" }),
-            U.el("div", { class: "card", style: { padding: "12px", background: "var(--surface)" } }, [
-                U.el("div", { style: { fontWeight: "700", fontSize: "1rem" }, text: locLabel }),
-                locDetail ? U.el("div", { class: "muted", style: { fontSize: ".82rem", marginTop: "4px" }, text: locDetail }) : null,
-                currentLoc && currentLoc.timestamp ? U.el("div", { class: "muted", style: { fontSize: ".75rem", marginTop: "4px" }, text: "Mise à jour : " + new Date(currentLoc.timestamp).toLocaleString("fr-FR") }) : null,
-                U.el("div", { class: "btn-row", style: { marginTop: "10px" } }, [
-                    U.el("button", {
-                        class: "btn btn-primary btn-sm", type: "button", text: "📍 Détecter ma position",
-                        on: {
-                            click: async function () {
-                                try {
-                                    const btn = this;
-                                    btn.disabled = true;
-                                    btn.textContent = "Détection...";
-                                    const loc = await FT.location.detect();
-                                    U.toast("Position mise à jour", "success", loc.label);
-                                    renderSettingsPage();
-                                } catch (e) {
-                                    U.toast("Erreur localisation", "error", e.message);
+        const locationCard = U.el("div", { class: "card card-lg" }, [
+            U.el("div", { class: "card-head" }, [
+                U.el("h3", {}, [U.el("span", { text: "📍" }), U.el("span", { text: "Position" })]),
+                U.el("span", { class: "tag", text: settings.showLocation ? "Activée" : "Désactivée" })
+            ]),
+            U.el("div", { class: "switch" }, [
+                U.el("div", { class: "switch-text" }, [
+                    U.el("div", { class: "st-title" }, [U.el("label", { for: "settingShowLocation", text: "Afficher ma position" })]),
+                    U.el("div", { class: "st-desc", text: "Affiche ta position sur le tableau de bord uniquement si activé. Désactivé par défaut." })
+                ]),
+                showLocationToggle
+            ]),
+            settings.showLocation ? U.el("div", { class: "field", style: { marginTop: "12px" } }, [
+                U.el("label", { text: "📍 Ma position (auto)" }),
+                U.el("div", { class: "card", style: { padding: "12px", background: "var(--surface-2)" } }, [
+                    U.el("div", { style: { fontWeight: "700", fontSize: "1rem" }, text: locLabel }),
+                    locDetail ? U.el("div", { class: "muted", style: { fontSize: ".82rem", marginTop: "4px" }, text: locDetail }) : null,
+                    currentLoc && currentLoc.timestamp ? U.el("div", { class: "muted", style: { fontSize: ".75rem", marginTop: "4px" }, text: "Mise à jour : " + new Date(currentLoc.timestamp).toLocaleString("fr-FR") }) : null,
+                    U.el("div", { class: "btn-row", style: { marginTop: "10px" } }, [
+                        U.el("button", {
+                            class: "btn btn-primary btn-sm", type: "button", text: "📍 Détecter ma position",
+                            on: {
+                                click: async function () {
+                                    try {
+                                        const btn = this;
+                                        btn.disabled = true;
+                                        btn.textContent = "Détection...";
+                                        const loc = await FT.location.detect();
+                                        U.toast("Position mise à jour", "success", loc.label);
+                                        renderSettingsPage();
+                                    } catch (e) {
+                                        U.toast("Erreur localisation", "error", e.message);
+                                    }
                                 }
                             }
-                        }
-                    }),
-                    U.el("button", {
-                        class: "btn btn-ghost btn-sm", type: "button", text: "Effacer",
-                        on: {
-                            click: function () {
-                                try { localStorage.removeItem("finatrack_location"); } catch (e) {}
-                                data.saveSettings({ area: "" });
-                                U.toast("Position effacée", "info", "Retour à Abidjan par défaut");
-                                renderSettingsPage();
+                        }),
+                        U.el("button", {
+                            class: "btn btn-ghost btn-sm", type: "button", text: "Effacer",
+                            on: {
+                                click: function () {
+                                    try { localStorage.removeItem("finatrack_location"); } catch (e) {}
+                                    data.saveSettings({ area: "" });
+                                    U.toast("Position effacée", "info", "Position supprimée");
+                                    renderSettingsPage();
+                                }
                             }
-                        }
-                    })
-                ])
-            ]),
-            U.el("div", { class: "help", text: "Utilise le GPS de ton téléphone si tu autorises. Aucune saisie manuelle nécessaire." })
+                        })
+                    ])
+                ]),
+                U.el("div", { class: "help", text: "Utilise le GPS de ton téléphone si tu autorises. Aucune saisie manuelle nécessaire." })
+            ]) : U.el("div", { class: "muted", style: { fontSize: ".85rem", marginTop: "8px" }, text: "Active l'affichage pour détecter et voir ta position." })
         ]);
 
         /* --- Auth obligatoire --- */
@@ -1546,18 +1574,24 @@
                     if (!hero) return;
                     // Crée une bannière au-dessus du hero si pas déjà présente
                     if (document.getElementById("welcomeBanner")) return;
-                    // Zone non fixe — prend la zone de l'utilisateur depuis settings, pas Cocody en dur
-                    let areaLabel = "Abidjan";
+                    // Nom utilisateur + position uniquement si activée
+                    let areaPart = "";
                     try {
                         const s = data.getSettings();
-                        areaLabel = (s.area || U.LOCAL_CONTEXT.defaultArea || "Abidjan").trim();
-                    } catch(e){}
+                        if (s.showLocation) {
+                            const a = (s.area || "").trim();
+                            if (a) areaPart = " — " + a + " · ";
+                            else areaPart = " · ";
+                        } else {
+                            areaPart = " · ";
+                        }
+                    } catch(e){ areaPart = " · "; }
                     const banner = U.el("div", { id:"welcomeBanner", class:"welcome-banner", role:"status", style:{ marginBottom:"16px", padding:"14px 18px", borderRadius:"14px", background:"linear-gradient(135deg,#123C32 0%,#1E5A4A 100%)", color:"#F6F2E8", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px", boxShadow:"0 6px 18px rgba(18,60,50,.22)", border:"1px solid rgba(231,184,75,.25)" }}, [
                         U.el("div", { style:{ display:"flex", alignItems:"center", gap:"12px" }}, [
                             U.el("span", { style:{ fontSize:"28px" }, text: emoji }),
                             U.el("div", {}, [
                                 U.el("div", { style:{ fontWeight:"800", fontSize:"1.05rem", letterSpacing:"-.01em" }, text: greet + " " + firstName + " !"}),
-                                U.el("div", { style:{ opacity:".85", fontSize:".88rem", marginTop:"2px" }, text: "Content de vous revoir — " + areaLabel + " · " + new Date().toLocaleDateString("fr-FR",{ weekday:"long", day:"numeric", month:"long"})})
+                                U.el("div", { style:{ opacity:".85", fontSize:".88rem", marginTop:"2px" }, text: "Content de vous revoir" + areaPart + new Date().toLocaleDateString("fr-FR",{ weekday:"long", day:"numeric", month:"long"})})
                             ])
                         ]),
                         U.el("button", { class:"btn btn-ghost btn-sm", type:"button", text:"✕", attrs:{ "aria-label":"Fermer" }, style:{ color:"#F6F2E8", borderColor:"rgba(255,255,255,.2)" }, on:{ click:function(){ banner.remove(); } } })

@@ -63,16 +63,31 @@
     }
 
     function areaLabel() {
-        // Système de localisation automatique : utilise FT.location si dispo, sinon settings.area, sinon ville
+        // Position affichée uniquement si l'utilisateur l'active dans Paramètres (showLocation)
         try {
+            const settings = data.getSettings();
+            if (!settings.showLocation) return ""; // pas de position si désactivée
             if (global.FT.location) {
                 const label = FT.location.getLabel();
                 if (label) return label;
             }
-        } catch (e) {}
-        const settings = data.getSettings();
-        const area = (settings.area || "").trim();
-        return area || U.LOCAL_CONTEXT.city;
+            const area = (settings.area || "").trim();
+            return area || "";
+        } catch (e) { return ""; }
+    }
+    function userDisplayName() {
+        try {
+            const s = data.getSettings();
+            if (s.userName && s.userName.trim()) return s.userName.trim();
+            if (global.FT.auth) {
+                const u = FT.auth.getCurrentUser();
+                if (u) {
+                    if (u.name && u.name.trim()) return u.name.trim();
+                    if (u.email) return u.email.split("@")[0];
+                }
+            }
+        } catch(e){}
+        return "";
     }
     function greeting() {
         let h = new Date().getHours();
@@ -93,14 +108,16 @@
         const host = U.qs("#dashHero");
         if (!host) return;
         U.clear(host);
-        const name = d.greetingName ? " " + d.greetingName : "";
+        // Nom de l'utilisateur connecté (remplace Cocody-Angré)
+        const displayName = userDisplayName() || d.greetingName || "";
+        const name = displayName ? " " + displayName : "";
+        const area = areaLabel(); // vide si showLocation désactivé
 
         host.appendChild(U.el("div", {
             class: "hero hero-solde hero-compact is-clickable",
             attrs: { title: "Voir les détails", role: "button", tabindex: "0", "aria-label": "Solde " + U.formatCurrency(d.balance) + ", cliquer pour voir les détails" },
             on: {
                 click: function (e) {
-                    // Ne pas interférer avec les boutons d'action
                     if (e.target.closest("[data-action]")) return;
                     openDetails();
                 },
@@ -113,7 +130,8 @@
             U.el("div", { class: "hero-inner" }, [
                 U.el("div", { class: "hero-compact-top" }, [
                     U.el("div", {}, [
-                        U.el("div", { class: "hero-greeting", text: greeting() + name + " — " + areaLabel() }),
+                        U.el("div", { class: "hero-greeting", text: greeting() + name }),
+                        area ? U.el("div", { class: "hero-location", style: { fontSize: ".78rem", opacity: ".75", marginTop: "2px", display: "flex", alignItems: "center", gap: "4px" }, text: "📍 " + area }) : null,
                         U.el("div", { class: "hero-solde-label", text: "Solde réel · " + d.monthLabel + " · cliquer pour détails" }),
                         U.el("div", { class: "hero-value-huge num", text: U.formatCurrency(d.balance) }),
                         U.el("div", { class: "hero-sub", text: "Reste " + U.formatCurrency(d.savings) + " · " + d.monthExpenseCount + " dépenses · Aujourd'hui " + U.formatCurrency(d.todayExpense) })

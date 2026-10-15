@@ -175,7 +175,8 @@
                         theme: setRemote.theme || "light",
                         textSize: setRemote.text_size || "normal",
                         voiceLanguage: setRemote.voice_language || "fr-FR",
-                        area: setRemote.area || "Cocody — Angré",
+                        area: setRemote.area || "",
+                        showLocation: setRemote.show_location === true || setRemote.showLocation === true || false,
                         alertsEnabled: setRemote.alerts_enabled !== false
                     };
                     try { global.localStorage.setItem("finatrack_settings", JSON.stringify(mergedSettings)); } catch (e) {}
@@ -317,18 +318,27 @@
                 area: (settings.area || "").trim() || null,
                 updated_at: new Date().toISOString()
             };
-            // Essaie avec alerts_enabled, sinon sans (colonne peut manquer)
-            let rowWithAlert = Object.assign({}, baseRow, { alerts_enabled: settings.alertsEnabled !== false });
-            let { error } = await c.from("settings").upsert(rowWithAlert, { onConflict: "user_id" });
-            if (error && error.message && error.message.toLowerCase().indexOf("alerts_enabled") !== -1) {
-                console.warn("[Supabase Sync] alerts_enabled column missing, retry without");
-                const res2 = await c.from("settings").upsert(baseRow, { onConflict: "user_id" });
-                if (res2.error) console.error("[Supabase Sync] push settings error", res2.error);
-                else console.info("[Supabase Sync] push settings ok (without alerts_enabled)");
-                return;
+            // Colonnes optionnelles (peuvent manquer si migration non jouée)
+            const extras = {};
+            if (typeof settings.showLocation === "boolean") extras.show_location = settings.showLocation;
+            if (typeof settings.alertsEnabled === "boolean") extras.alerts_enabled = settings.alertsEnabled !== false;
+
+            let row = Object.assign({}, baseRow, extras);
+            let { error } = await c.from("settings").upsert(row, { onConflict: "user_id" });
+            if (error) {
+                // Si colonne manquante (show_location ou alerts_enabled), retry sans extras
+                const msg = (error.message || "").toLowerCase();
+                if (msg.indexOf("show_location") !== -1 || msg.indexOf("alerts_enabled") !== -1) {
+                    console.warn("[Supabase Sync] colonne optionnelle manquante, retry sans", error.message);
+                    const res2 = await c.from("settings").upsert(baseRow, { onConflict: "user_id" });
+                    if (res2.error) console.error("[Supabase Sync] push settings error", res2.error);
+                    else console.info("[Supabase Sync] push settings ok (sans extras)");
+                    return;
+                }
+                console.error("[Supabase Sync] push settings error", error);
+            } else {
+                console.info("[Supabase Sync] push settings ok");
             }
-            if (error) console.error("[Supabase Sync] push settings error", error);
-            else console.info("[Supabase Sync] push settings ok");
         } catch (e) { console.error("[Supabase Sync] push settings failed", e.message, e); }
     }
 

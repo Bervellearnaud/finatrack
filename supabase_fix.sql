@@ -114,6 +114,9 @@ begin
   if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='alerts_enabled') then
     alter table settings add column alerts_enabled boolean default true;
   end if;
+  if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='show_location') then
+    alter table settings add column show_location boolean default false;
+  end if;
   if not exists (select 1 from information_schema.columns where table_name='settings' and column_name='updated_at') then
     alter table settings add column updated_at timestamptz default now();
   end if;

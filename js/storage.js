@@ -31,7 +31,8 @@
         demoLoaded: false,
         alertsEnabled: true,
         monthlyBudgetHint: 200000,
-        area: "Cocody — Angré",
+        area: "",                        /* plus de Cocody par défaut — affiché seulement si showLocation activé */
+        showLocation: false,             /* position affichée uniquement si activée dans Paramètres */
         voiceLanguage: "fr-FR",
         textSize: "normal",          /* confort de lecture : normal | grand | tres-grand */
         version: KEYS.VERSION
