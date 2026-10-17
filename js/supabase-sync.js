@@ -165,6 +165,14 @@
                 const merged = Object.assign({}, localWal, map);
                 try { global.localStorage.setItem("finatrack_wallets", JSON.stringify(merged)); } catch (e) {}
                 if (walRemote.length) console.info("[Supabase Sync] pull wallets +" + walRemote.length);
+                // Si remote vide mais local a des soldes, pousse tout vers cloud
+                if (!walRemote.length) {
+                    const localKeys = Object.keys(localWal || {});
+                    if (localKeys.length) {
+                        console.info("[Supabase Sync] remote wallets empty but local has " + localKeys.length + " → pushAllWallets");
+                        setTimeout(function(){ pushAllWallets(); }, 800);
+                    }
+                }
             }
             // Settings
             try {
@@ -278,7 +286,7 @@
         let uid = await getUserId();
         if (!uid) uid = await getUserId(true);
         if (!c || !uid || !isOnline()) {
-            console.warn("[Supabase Sync] push wallet skipped — no uid", { method: method, amount: amount, uid: uid });
+            console.warn("[Supabase Sync] push wallet skipped — no uid", { method: method, amount: amount, uid: uid, online: isOnline() });
             if (!uid) {
                 try {
                     if (global.FT && FT.utils && FT.utils.toast) {
@@ -291,13 +299,54 @@
         try {
             let res;
             if (!amount && amount !== 0) {
+                console.info("[Supabase Sync] push wallet delete", method);
                 res = await c.from("wallets").delete().eq("user_id", uid).eq("method", method);
             } else {
-                res = await c.from("wallets").upsert({ user_id: uid, method: method, amount: amount }, { onConflict: "user_id,method" });
+                const row = { user_id: uid, method: String(method), amount: Number(amount) || 0 };
+                console.info("[Supabase Sync] push wallet try", row);
+                res = await c.from("wallets").upsert(row, { onConflict: "user_id,method" });
+                // Si upsert échoue à cause de contrainte manquante, tente insert
+                if (res.error && res.error.code === "42P10") {
+                    console.warn("[Supabase Sync] upsert constraint missing, try insert", res.error.message);
+                    res = await c.from("wallets").insert(row);
+                }
             }
-            if (res.error) console.error("[Supabase Sync] push wallet error", res.error, { method: method, amount: amount });
-            else console.info("[Supabase Sync] push wallet ok", method, amount);
+            if (res.error) {
+                console.error("[Supabase Sync] push wallet error", {
+                    message: res.error.message,
+                    code: res.error.code,
+                    details: res.error.details,
+                    hint: res.error.hint,
+                    method: method,
+                    amount: amount
+                });
+                console.error(res.error);
+            } else {
+                console.info("[Supabase Sync] push wallet ok", method, amount, res.data || "");
+            }
         } catch (e) { console.error("[Supabase Sync] push wallet failed", e.message, e); }
+    }
+
+    async function pushAllWallets() {
+        try {
+            const c = getClient();
+            const uid = await getUserId();
+            if (!c || !uid || !isOnline()) return;
+            const localWallets = local.getWallets ? local.getWallets() : {};
+            const keys = Object.keys(localWallets);
+            if (!keys.length) {
+                console.info("[Supabase Sync] pushAllWallets — no local wallets");
+                return;
+            }
+            console.info("[Supabase Sync] pushAllWallets try", keys.length, localWallets);
+            for (const method of keys) {
+                const amt = localWallets[method];
+                if (amt === "" || amt === null || amt === undefined) continue;
+                await pushWallet(method, amt);
+            }
+        } catch (e) {
+            console.warn("[Supabase Sync] pushAllWallets failed", e.message);
+        }
     }
 
     async function pushSettings(settings) {
@@ -521,6 +570,8 @@
     global.FT.supabaseSync = {
         init: init,
         pull: pull,
+        pushWallet: pushWallet,
+        pushAllWallets: pushAllWallets,
         getClient: getClient,
         isEnabled: function () { return enabled; }
     };

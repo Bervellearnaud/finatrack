@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.3.3";   /* v3.3.3 : navbar PC/mobile - Parametres visible partout (sidebar PC, topbar mobile, + menu), Epargne dans bottom-nav mobile */
+const VERSION = "finatrack-v3.3.4";   /* v3.3.4 : fix wallets table vide - pushWallet logs detailles + pushAllWallets si remote vide */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
