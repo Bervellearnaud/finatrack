@@ -1144,47 +1144,8 @@
             ])
         ]);
 
-        /* --- Confort de lecture : la taille du texte pour tout le projet --- */
-        const currentTextSize = data.getSettings().textSize || "normal";
-        const textButtons = U.TEXT_SIZES.map(function (option) {
-            return U.el("button", {
-                type: "button",
-                class: "text-size-choice" + (option.value === currentTextSize ? " is-active" : ""),
-                dataset: { size: option.value },
-                attrs: {
-                    "aria-pressed": option.value === currentTextSize ? "true" : "false",
-                    "aria-label": "Taille de texte " + option.label
-                },
-                on: {
-                    click: function () {
-                        U.applyTextSize(option.value, true);
-                        renderSettingsPage();
-                        U.toast("Confort de lecture : " + option.label, "info",
-                            option.value === "normal" ? "Taille d'origine rétablie." : "Les textes du projet sont agrandis partout.");
-                        if (global.FT.mobile && global.FT.mobile.haptic) global.FT.mobile.haptic("light");
-                    }
-                }
-            }, [
-                U.el("span", { class: "tsc-icon", text: option.icon, attrs: { "aria-hidden": "true" } }),
-                U.el("span", { class: "tsc-label", text: option.label })
-            ]);
-        });
-
-        const readingCard = U.el("div", { class: "card card-lg", id: "settingsReading" }, [
-            U.el("div", { class: "card-head" }, [
-                U.el("h3", {}, [U.el("span", { text: "👓" }), U.el("span", { text: "Confort de lecture" })]),
-                U.el("span", { class: "tag", text: (U.TEXT_SIZES.filter(function (t) { return t.value === currentTextSize; })[0] || U.TEXT_SIZES[0]).label })
-            ]),
-            U.el("p", { class: "muted", text: "Choisissez la taille des textes de l'application. Le réglage s'applique à toutes les pages, sur téléphone comme sur ordinateur, et reste enregistré pour vos prochaines visites." }),
-            U.el("div", { class: "text-size-grid", attrs: { role: "group", "aria-label": "Taille des textes" } }, textButtons),
-            U.el("dl", { class: "meta-list", style: { marginTop: "12px" } },
-                U.TEXT_SIZES.reduce(function (lignes, option) {
-                    lignes.push(U.el("dt", { text: option.label }));
-                    lignes.push(U.el("dd", { text: option.hint }));
-                    return lignes;
-                }, [])),
-            U.el("p", { class: "field-hint", text: "Astuce : le zoom de votre navigateur reste disponible et se combine à ce réglage." })
-        ]);
+        /* --- Confort de lecture — retiré sur demande utilisateur (v3.3.7) --- */
+        const readingCard = null;
 
         /* Portefeuilles retirés des Paramètres — maintenant onglet dédié 💳 */
         /* Repères locaux retirés sur demande utilisateur */
