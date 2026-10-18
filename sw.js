@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.3.7";   /* v3.3.7 : retire Confort de lecture dans Parametres */
+const VERSION = "finatrack-v3.3.8";   /* v3.3.8 : retire Donnees locales Vos donnees restent dans ce navigateur dans dashboard */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
