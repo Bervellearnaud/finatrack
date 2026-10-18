@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.3.5";   /* v3.3.5 : retire texte localStorage dans Parametres - affiche Appareil/Cloud */
+const VERSION = "finatrack-v3.3.6";   /* v3.3.6 : retire Categories de depenses et Moyens de paiement dans Parametres */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

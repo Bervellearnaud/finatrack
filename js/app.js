@@ -1315,25 +1315,8 @@
             ]) : null
         ]);
 
-        /* --- Catégories & paiements --- */
-        const categoriesCard = U.el("div", { class: "card card-lg" }, [
-            U.el("div", { class: "card-head" }, [U.el("h3", {}, [U.el("span", { text: "🏷️" }), U.el("span", { text: "Catégories de dépenses" })])]),
-            U.el("div", { class: "chip-select" }, U.CATEGORIES.map(function (c) {
-                return U.el("span", { class: "chip", text: U.categoryEmoji(c) + " " + c, attrs: { title: U.categoryHint(c) } });
-            })),
-            U.el("ul", { class: "stack local-hints", style: { marginTop: "12px", gap: "6px", fontSize: "var(--fs-sm)" } },
-                U.CATEGORIES.map(function (c) {
-                    return U.el("li", {}, [
-                        U.el("strong", { text: U.categoryEmoji(c) + " " + c + " — " }),
-                        U.el("span", { class: "muted", text: U.categoryHint(c) })
-                    ]);
-                })),
-            U.el("div", { class: "card-head", style: { marginTop: "20px" } }, [U.el("h3", {}, [U.el("span", { text: "💳" }), U.el("span", { text: "Moyens de paiement" })])]),
-            U.el("div", { class: "chip-select" }, U.PAYMENT_METHODS.map(function (m) {
-                return U.el("span", { class: "chip", text: U.paymentEmoji(m) + " " + m });
-            })),
-            U.el("p", { class: "muted", style: { fontSize: "var(--fs-sm)", marginTop: "14px" }, text: "Les catégories et moyens de paiement sont adaptés au contexte ivoirien (mobile money, gbaka, maquis, CIE, SODECI…)." })
-        ]);
+        /* --- Catégories & paiements — retirés sur demande utilisateur (v3.3.6) --- */
+        const categoriesCard = null;
 
         /* Confidentialité retirée sur demande — plus de carte */
 
