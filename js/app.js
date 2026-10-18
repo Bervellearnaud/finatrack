@@ -1232,10 +1232,18 @@
         ]);
 
         /* --- Données --- */
+        const adapterLabel = (function(){
+            const name = (global.FT.data && global.FT.data.adapterName) || "";
+            if (!name) return "Appareil";
+            const lower = String(name).toLowerCase();
+            if (lower.indexOf("supabase") !== -1) return "☁️ Cloud";
+            if (lower === "localstorage" || lower === "local") return "📱 Appareil";
+            return name;
+        })();
         const dataCard = U.el("div", { class: "card card-lg" }, [
             U.el("div", { class: "card-head" }, [
                 U.el("h3", {}, [U.el("span", { text: "💾" }), U.el("span", { text: "Mes données" })]),
-                U.el("span", { class: "tag", text: global.FT.data.adapterName })
+                U.el("span", { class: "tag", text: adapterLabel })
             ]),
             U.el("div", { class: "stat-grid", style: { gridTemplateColumns: "repeat(3, minmax(0,1fr))" } }, [
                 U.el("div", { class: "stat" }, [U.el("div", { class: "stat-label", text: "Dépenses" }), U.el("div", { class: "stat-value", text: String(expenses.length) })]),

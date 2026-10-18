@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.3.4";   /* v3.3.4 : fix wallets table vide - pushWallet logs detailles + pushAllWallets si remote vide */
+const VERSION = "finatrack-v3.3.5";   /* v3.3.5 : retire texte localStorage dans Parametres - affiche Appareil/Cloud */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier
