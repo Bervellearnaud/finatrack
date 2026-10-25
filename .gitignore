@@ -15,3 +15,6 @@ __pycache__/
 *.pyc
 *.log
 js/config.js
+
+# Captures brutes régénérables (node tools/mockups.js)
+mockups/bruts/

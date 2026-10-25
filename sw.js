@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.3.9";   /* v3.3.9 : retire bouton + Ajouter orange fab-desktop */
+const VERSION = "finatrack-v3.4.0";   /* v3.4.0 : fix debordement stats budget mobile + mockups */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

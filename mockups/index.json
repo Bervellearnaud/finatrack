@@ -1,0 +1,34 @@
+[
+  {
+    "name": "dashboard",
+    "title": "Tableau de bord"
+  },
+  {
+    "name": "transactions",
+    "title": "Transactions"
+  },
+  {
+    "name": "revenus",
+    "title": "Revenus"
+  },
+  {
+    "name": "budget",
+    "title": "Budget"
+  },
+  {
+    "name": "epargne",
+    "title": "Épargne"
+  },
+  {
+    "name": "analyse",
+    "title": "Analyse"
+  },
+  {
+    "name": "portefeuilles",
+    "title": "Portefeuilles"
+  },
+  {
+    "name": "parametres",
+    "title": "Paramètres"
+  }
+]

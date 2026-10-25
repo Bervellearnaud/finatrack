@@ -556,3 +556,21 @@
         display: none !important;
     }
 }
+
+/* ==========================================================================
+   Correctif lisibilité — stats du bloc budget (dashboard)
+   Sur mobile, les 3 colonnes Budget / Dépensé / Restant étaient trop
+   serrées : le libellé « RESTANT » et les montants se coupaient.
+   On réduit le rembourrage et l'interlettrage plutôt que la taille du texte.
+   ========================================================================== */
+@media (max-width: 1023px) {
+    .budget-hero-stats .stat { padding: 10px 8px; }
+    .budget-hero-stats .stat-label { font-size: 10.5px; letter-spacing: 0.02em; }
+    .budget-hero-stats .stat-value { font-size: 0.95rem; word-break: break-word; }
+}
+@media (max-width: 400px) {
+    .budget-hero-stats .stat { padding: 8px 5px; }
+    .budget-hero-stats .stat-label { font-size: 10px; letter-spacing: 0; }
+    .budget-hero-stats .stat-value { font-size: 0.85rem; }
+    .budget-hero-stats .stat-grid { gap: 6px; }
+}
