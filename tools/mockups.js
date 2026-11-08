@@ -35,6 +35,8 @@ const PAGES = [
     ["analyse", "/pages/analysis.html", "Analyse"],
     ["portefeuilles", "/pages/wallets.html", "Portefeuilles"],
     ["parametres", "/pages/settings.html", "Paramètres"],
+    /* `noAuth` : la page de connexion redirige si une session existe. */
+    ["connexion", "/pages/login.html", "Connexion", { noAuth: true }],
 ];
 
 const DESKTOP = { width: 1440, height: 900, deviceScaleFactor: 2 };
@@ -44,11 +46,15 @@ const MOBILE = {
 };
 
 /** Contourne l'authentification pour les captures. */
-async function newPage(browser, viewport) {
+async function newPage(browser, viewport, opts) {
+    const noAuth = !!(opts && opts.noAuth);
     const page = await browser.newPage();
     await page.setViewport(viewport);
-    await page.evaluateOnNewDocument(function () {
-        window.__isTest = true;
+    await page.evaluateOnNewDocument(function (noAuth) {
+        /* Sur login.html, __isTest doit rester faux : sinon la page nous
+           considère déjà connecté et renvoie vers le tableau de bord. */
+        window.__isTest = !noAuth;
+        window.__FT_NO_AUTH = noAuth;
         /* Session factice en local : évite la redirection vers login.html
            et coupe le client Supabase (aucune requête réseau pendant la capture). */
         try {
@@ -59,14 +65,16 @@ async function newPage(browser, viewport) {
                     Object.defineProperty(window, "FT_CONFIG", { value: {}, writable: true, configurable: true });
                 },
             });
-            localStorage.setItem("finatrack_session", JSON.stringify({
-                userId: "capture", email: "awa@finatrack.ci", name: "Awa", provider: "local",
-            }));
+            if (!window.__FT_NO_AUTH) {
+                localStorage.setItem("finatrack_session", JSON.stringify({
+                    userId: "capture", email: "awa@finatrack.ci", name: "Awa", provider: "local",
+                }));
+            }
             localStorage.setItem("finatrack_settings", JSON.stringify({
                 demoLoaded: true, userName: "Awa", currency: "FCFA", showLocation: false,
             }));
         } catch (e) {}
-    });
+    }, noAuth);
     /* Coupe tout appel réseau externe : la capture reste locale et rapide. */
     await page.setRequestInterception(true);
     page.on("request", function (req) {
@@ -107,8 +115,16 @@ async function prepare(page) {
 
 async function capture(browser, viewport, suffix) {
     const made = [];
-    for (const [name, url, title] of PAGES) {
-        const page = await newPage(browser, viewport);
+    for (const [name, url, title, opts] of PAGES) {
+        const page = await newPage(browser, viewport, opts);
+        if (opts && opts.noAuth) {
+            /* Le stockage est partagé entre les pages du même contexte : la
+               session posée pour le tableau de bord ferait rediriger login.html.
+               On charge l'origine une fois, on vide, puis on ouvre la page. */
+            await page.goto(BASE + "/index.html", { waitUntil: "domcontentloaded", timeout: 30000 })
+                .catch(function () {});
+            await page.evaluate(function () { try { localStorage.clear(); } catch (e) {} });
+        }
         try {
             await page.goto(BASE + url, { waitUntil: "domcontentloaded", timeout: 30000 });
         } catch (e) {

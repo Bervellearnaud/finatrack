@@ -398,6 +398,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
     background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 .bottom-nav .bn-item:hover { text-decoration: none; color: var(--text); }
+/* Les libellés restent sur une seule ligne, entiers : « Transactions » se
+   coupait en « Trans-actions » sur les écrans de 360–390 px. On gagne la
+   place nécessaire en resserrant légèrement la police, jamais en tronquant. */
+.bottom-nav .bn-item > span:not(.bn-ico) {
+    white-space: nowrap; hyphens: none; -webkit-hyphens: none;
+}
+@media (max-width: 420px) {
+    .bottom-nav .bn-item { font-size: 10.5px; letter-spacing: -0.02em; }
+}
 .bottom-nav .bn-ico { font-size: 1.15rem; line-height: 1; filter: saturate(0.9); }
 .bottom-nav .bn-item[aria-current="page"] { color: var(--primary); }
 [data-theme="dark"] .bottom-nav .bn-item[aria-current="page"] { color: var(--primary-light); }

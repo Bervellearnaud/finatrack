@@ -12,7 +12,7 @@
      • aucune requête vers un autre domaine n'est interceptée.
    ========================================================================== */
 
-const VERSION = "finatrack-v3.4.0";   /* v3.4.0 : fix debordement stats budget mobile + mockups */
+const VERSION = "finatrack-v3.4.1";   /* v3.4.1 : libelles barre basse non coupes + page connexion sans mention locale */
 const CACHE_NAME = VERSION + "-static";
 
 /* Chemins relatifs : le service worker fonctionne aussi dans un sous-dossier

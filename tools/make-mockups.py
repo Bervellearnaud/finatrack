@@ -115,7 +115,7 @@ def browser(screen_path, target_w=1000, chrome_h=44, radius=14, pad=56):
     ax0, ax1 = pad + 94, pad + target_w - 22
     d.rounded_rectangle((ax0, cy - 12, ax1, cy + 12), radius=12, fill=(250, 247, 240))
     d.ellipse((ax0 + 12, cy - 5, ax0 + 22, cy + 5), outline=(150, 158, 152), width=2)
-    d.text((ax0 + 32, cy - 8), "finatrack-ci.netlify.app", font=font(15, False), fill=MUTED)
+    d.text((ax0 + 32, cy - 8), "finnatrack.netlify.app", font=font(15, False), fill=MUTED)
 
     mask = Image.new("L", screen.size, 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, screen.width - 1, screen.height - 1),
@@ -322,6 +322,10 @@ def main():
     hero("dashboard", "Votre argent,\nclair comme de l'eau",
          "Solde réel, budget du mois et dépenses classées —\npensé pour le quotidien à Abidjan.",
          OUT / "09-banniere.png")
+
+    duo("connexion", "Se connecter en deux gestes",
+        "Compte sécurisé par Supabase : e-mail ou lien magique, aucune donnée stockée en local.",
+        OUT / "11-connexion-mobile-et-web.png")
 
     trio_mobile([
         ("dashboard", "Accueil"),

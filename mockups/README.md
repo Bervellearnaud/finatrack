@@ -18,6 +18,7 @@ pas des maquettes inventées : chaque écran est rendu dans Chrome puis habillé
 | `08-planche-web.png` | 1860×~1600 | 4 écrans web en grille |
 | `09-banniere.png` | 1920×1080 | Bannière 16:9 — réseaux sociaux, en-tête de page |
 | `10-mobile-trio.png` | 1700×~970 | 3 téléphones côte à côte — accueil, budget, épargne |
+| `11-connexion-mobile-et-web.png` | 1920×1180 | Duo mobile + web — écran de connexion |
 
 `bruts/` contient les captures non habillées (16 fichiers, mobile 390×844 et desktop
 1440×900). Ce dossier est ignoré par git : il se régénère.
@@ -47,9 +48,18 @@ jamais la base Supabase.
 - Motif bogolan en frise haute uniquement, à faible opacité — jamais sur le contenu
 - Le nom affiché est « Awa », jeu de données de démonstration
 
-## Note
+## Conformité
 
-Les emojis de l'interface (🏠💸💰…) apparaissent en glyphes monochromes dans les
-captures : le serveur de capture n'a pas la police Noto Color Emoji. Sur un
-vrai appareil ils sont en couleur. Ajouter `fonts-noto-color-emoji` sur la
-machine de capture règle le rendu.
+Les captures montrent l'application réelle : URL `finnatrack.netlify.app`,
+police Noto Sans, emojis en couleur, jeu de démonstration « Awa », montants en FCFA.
+
+Prérequis de la machine de capture pour un rendu fidèle :
+
+```bash
+sudo apt-get install -y fonts-noto-core fonts-noto-color-emoji
+libnspr4 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0
+libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libpango-1.0-0 libcairo2
+```
+
+Sans `fonts-noto-core`, le texte tombe sur une police à chasse fixe et les mots
+se retrouvent espacés ; sans `fonts-noto-color-emoji`, les emojis sortent en noir.
